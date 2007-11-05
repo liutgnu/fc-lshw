@@ -1,7 +1,7 @@
 Summary: Hardware lister
 Name:    lshw
-Version: B.02.11.01
-Release: 3%{?dist}
+Version: B.02.12.01
+Release: 1%{?dist}
 License: GPLv2
 Group:   Applications/System
 URL:     http://ezix.org/project/wiki/HardwareLiSter
@@ -44,6 +44,10 @@ plain, XML or HTML format.
 %build
 %{__make} %{?_smp_mflags} SBINDIR="%{_sbindir}" gui 
 
+# Replace copyrighted icons
+pushd src
+%{__make} nologo
+
 %install
 %{__rm} -rf %{buildroot}
 %{__make} install              \
@@ -77,11 +81,6 @@ desktop-file-install --vendor fedora  \
 %{__install} -D -m 0644 %{SOURCE3} \
    %{buildroot}%{_sysconfdir}/pam.d/%{name}-gui
 
-# remove some trademarks
-for f in powermacg5 intel powermac amd mini powerpc ; do
-    %{__rm} -fv %{buildroot}%{_datadir}/%{name}/artwork/$f.svg
-done
-
 %clean
 %{__rm} -rf %{buildroot}
 
@@ -107,6 +106,10 @@ done
 %{_datadir}/applications/fedora-%{name}.desktop
 
 %changelog
+* Mon Nov  5 2007 Terje Rosten <terjeros@phys.ntnu.no> - B.02.12.01-1
+- B.02.12.01
+- Replace trademark icons
+
 * Tue Aug 14 2007 Terje Rosten <terjeros@phys.ntnu.no> - B.02.11.01-3
 - Move desktop and pam config to files
 - Simplify build
