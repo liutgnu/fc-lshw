@@ -1,7 +1,7 @@
 Summary: Hardware lister
 Name:    lshw
 Version: B.02.12.01
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group:   Applications/System
 URL:     http://ezix.org/project/wiki/HardwareLiSter
@@ -106,6 +106,9 @@ desktop-file-install --vendor fedora  \
 %{_datadir}/applications/fedora-%{name}.desktop
 
 %changelog
+* Mon Feb  9 2008 Terje Rosten <terjeros@phys.ntnu.no> - B.02.12.01-2
+- rebuild
+
 * Mon Nov  5 2007 Terje Rosten <terjeros@phys.ntnu.no> - B.02.12.01-1
 - B.02.12.01
 - Replace trademark icons
