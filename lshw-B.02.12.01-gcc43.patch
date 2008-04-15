@@ -1,0 +1,321 @@
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/blockio.cc lshw-B.02.12.01/src/core/blockio.cc
+--- lshw-B.02.12.01.orig/src/core/blockio.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/blockio.cc	2008-02-10 20:55:31.000000000 +0100
+@@ -11,6 +11,7 @@
+ #include "blockio.h"
+ #include "osutils.h"
+ #include <stdio.h>
++#include <string.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/cdrom.cc lshw-B.02.12.01/src/core/cdrom.cc
+--- lshw-B.02.12.01.orig/src/core/cdrom.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/cdrom.cc	2008-02-10 20:56:33.000000000 +0100
+@@ -23,6 +23,7 @@
+ #include <sys/ioctl.h>
+ #include <fcntl.h>
+ #include <unistd.h>
++#include <limits.h>
+ #include <linux/cdrom.h>
+ 
+ __ID("@(#) $Id: cdrom.cc 1907 2007-10-13 22:23:16Z lyonel $");
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/cpuid.cc lshw-B.02.12.01/src/core/cpuid.cc
+--- lshw-B.02.12.01.orig/src/core/cpuid.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/cpuid.cc	2008-02-10 20:57:37.000000000 +0100
+@@ -1,6 +1,7 @@
+ #include "version.h"
+ #include "cpuid.h"
+ #include <stdio.h>
++#include <string.h>
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <sys/stat.h>
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/cpuinfo.cc lshw-B.02.12.01/src/core/cpuinfo.cc
+--- lshw-B.02.12.01.orig/src/core/cpuinfo.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/cpuinfo.cc	2008-02-10 20:39:13.000000000 +0100
+@@ -6,6 +6,7 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <vector>
+ 
+ __ID("@(#) $Id: cpuinfo.cc 1907 2007-10-13 22:23:16Z lyonel $");
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/device-tree.cc lshw-B.02.12.01/src/core/device-tree.cc
+--- lshw-B.02.12.01.orig/src/core/device-tree.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/device-tree.cc	2008-02-10 20:38:06.000000000 +0100
+@@ -15,7 +15,9 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
++#include <stdlib.h>
+ #include <stdio.h>
++#include <string.h>
+ #include <unistd.h>
+ #include <dirent.h>
+ 
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/fb.cc lshw-B.02.12.01/src/core/fb.cc
+--- lshw-B.02.12.01.orig/src/core/fb.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/fb.cc	2008-02-10 20:54:36.000000000 +0100
+@@ -12,6 +12,7 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <stdio.h>
++#include <string.h>
+ #include <errno.h>
+ 
+ __ID("@(#) $Id: fb.cc 1907 2007-10-13 22:23:16Z lyonel $");
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/hw.cc lshw-B.02.12.01/src/core/hw.cc
+--- lshw-B.02.12.01.orig/src/core/hw.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/hw.cc	2008-02-10 20:33:06.000000000 +0100
+@@ -4,12 +4,14 @@
+ #include "version.h"
+ #include "options.h"
+ #include "heuristics.h"
++#include <cstring>
+ #include <vector>
+ #include <map>
+ #include <sstream>
+ #include <unistd.h>
+ #include <stdio.h>
+ #include <ctype.h>
++#include <limits.h>
+ #include <unistd.h>
+ #include <sys/utsname.h>
+ 
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/ide.cc lshw-B.02.12.01/src/core/ide.cc
+--- lshw-B.02.12.01.orig/src/core/ide.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/ide.cc	2008-02-10 21:06:12.000000000 +0100
+@@ -23,6 +23,8 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
+ #include <dirent.h>
+ #include <ctype.h>
+ #include <vector>
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/ideraid.cc lshw-B.02.12.01/src/core/ideraid.cc
+--- lshw-B.02.12.01.orig/src/core/ideraid.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/ideraid.cc	2008-02-10 20:59:00.000000000 +0100
+@@ -17,6 +17,7 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <stdio.h>
++#include <string.h>
+ #include <dirent.h>
+ #include <ctype.h>
+ #include <vector>
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/lvm.cc lshw-B.02.12.01/src/core/lvm.cc
+--- lshw-B.02.12.01.orig/src/core/lvm.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/lvm.cc	2008-02-10 20:59:29.000000000 +0100
+@@ -12,6 +12,7 @@
+ #include "version.h"
+ #include "lvm.h"
+ #include "osutils.h"
++#include <string.h>
+ 
+ __ID("@(#) $Id: lvm.cc 1907 2007-10-13 22:23:16Z lyonel $");
+ 
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/mounts.cc lshw-B.02.12.01/src/core/mounts.cc
+--- lshw-B.02.12.01.orig/src/core/mounts.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/mounts.cc	2008-02-10 21:48:38.000000000 +0100
+@@ -11,6 +11,8 @@
+ #include <iostream>
+ #include <sys/types.h>
+ #include <sys/stat.h>
++#include <stdlib.h>
++#include <string.h>
+ #include <unistd.h>
+ 
+ 
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/osutils.cc lshw-B.02.12.01/src/core/osutils.cc
+--- lshw-B.02.12.01.orig/src/core/osutils.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/osutils.cc	2008-02-10 20:40:39.000000000 +0100
+@@ -9,6 +9,7 @@
+ #include <dirent.h>
+ #include <limits.h>
+ #include <stdlib.h>
++#include <string.h>
+ #include <regex.h>
+ #include <ctype.h>
+ #include <stdio.h>
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/parisc.cc lshw-B.02.12.01/src/core/parisc.cc
+--- lshw-B.02.12.01.orig/src/core/parisc.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/parisc.cc	2008-02-10 21:10:33.000000000 +0100
+@@ -17,6 +17,8 @@
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ #include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
+ #include <unistd.h>
+ #include <dirent.h>
+ 
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/partitions.cc lshw-B.02.12.01/src/core/partitions.cc
+--- lshw-B.02.12.01.orig/src/core/partitions.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/partitions.cc	2008-02-10 21:12:36.000000000 +0100
+@@ -24,6 +24,8 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
++#include <string.h>
++#include <stdlib.h>
+ #include <unistd.h>
+ #include <stdint.h>
+ 
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/pci.cc lshw-B.02.12.01/src/core/pci.cc
+--- lshw-B.02.12.01.orig/src/core/pci.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/pci.cc	2008-02-10 20:43:04.000000000 +0100
+@@ -6,6 +6,8 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
+ #include <dirent.h>
+ 
+ __ID("@(#) $Id: pci.cc 1907 2007-10-13 22:23:16Z lyonel $");
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/pcmcia.cc lshw-B.02.12.01/src/core/pcmcia.cc
+--- lshw-B.02.12.01.orig/src/core/pcmcia.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/pcmcia.cc	2008-02-10 21:16:14.000000000 +0100
+@@ -7,6 +7,8 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
+ #include <errno.h>
+ #include <dirent.h>
+ 
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/pcmcia-legacy.cc lshw-B.02.12.01/src/core/pcmcia-legacy.cc
+--- lshw-B.02.12.01.orig/src/core/pcmcia-legacy.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/pcmcia-legacy.cc	2008-02-10 21:00:52.000000000 +0100
+@@ -7,6 +7,7 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <stdio.h>
++#include <string.h>
+ #include <errno.h>
+ 
+ __ID("@(#) $Id: pcmcia-legacy.cc 1907 2007-10-13 22:23:16Z lyonel $");
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/pnp.cc lshw-B.02.12.01/src/core/pnp.cc
+--- lshw-B.02.12.01.orig/src/core/pnp.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/pnp.cc	2008-02-10 21:01:48.000000000 +0100
+@@ -9,6 +9,7 @@
+ #include "version.h"
+ #include "pnp.h"
+ 
++#include <stdlib.h>
+ #include <string.h>
+ 
+ __ID("@(#) $Id: pnp.cc 1907 2007-10-13 22:23:16Z lyonel $");
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/print.cc lshw-B.02.12.01/src/core/print.cc
+--- lshw-B.02.12.01.orig/src/core/print.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/print.cc	2008-02-10 20:34:56.000000000 +0100
+@@ -11,10 +11,12 @@
+ #include "options.h"
+ #include "version.h"
+ #include "osutils.h"
++#include <cstring>
+ #include <iostream>
+ #include <sstream>
+ #include <iomanip>
+ #include <unistd.h>
++#include <stdlib.h>
+ #include <stdio.h>
+ #include <sys/ioctl.h>
+ #include <termios.h>
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/scsi.cc lshw-B.02.12.01/src/core/scsi.cc
+--- lshw-B.02.12.01.orig/src/core/scsi.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/scsi.cc	2008-02-10 21:07:22.000000000 +0100
+@@ -12,6 +12,8 @@
+ #include <unistd.h>
+ #include <dirent.h>
+ #include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
+ #include <scsi/sg.h>
+ #include <scsi/scsi.h>
+ #ifndef MKDEV
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/smp.cc lshw-B.02.12.01/src/core/smp.cc
+--- lshw-B.02.12.01.orig/src/core/smp.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/smp.cc	2008-02-10 21:02:17.000000000 +0100
+@@ -9,6 +9,7 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
++#include <string.h>
+ #include <unistd.h>
+ 
+ #include "osutils.h"
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/spd.cc lshw-B.02.12.01/src/core/spd.cc
+--- lshw-B.02.12.01.orig/src/core/spd.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/spd.cc	2008-02-10 21:02:50.000000000 +0100
+@@ -5,6 +5,7 @@
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ #include <unistd.h>
++#include <string.h>
+ #include <string>
+ #include <dirent.h>
+ #include <stdio.h>
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/sysfs.cc lshw-B.02.12.01/src/core/sysfs.cc
+--- lshw-B.02.12.01.orig/src/core/sysfs.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/sysfs.cc	2008-02-10 21:03:10.000000000 +0100
+@@ -11,6 +11,7 @@
+ #include <unistd.h>
+ #include <stdlib.h>
+ #include <stdio.h>
++#include <string.h>
+ #include <dirent.h>
+ #include <libgen.h>
+ #include <sys/stat.h>
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/usb.cc lshw-B.02.12.01/src/core/usb.cc
+--- lshw-B.02.12.01.orig/src/core/usb.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/usb.cc	2008-02-10 21:08:58.000000000 +0100
+@@ -18,6 +18,8 @@
+ #include <sys/ioctl.h>
+ #include <errno.h>
+ #include <fcntl.h>
++#include <string.h>
++#include <stdlib.h>
+ #include <unistd.h>
+ #include <dirent.h>
+ 
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/core/volumes.cc lshw-B.02.12.01/src/core/volumes.cc
+--- lshw-B.02.12.01.orig/src/core/volumes.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/core/volumes.cc	2008-02-10 21:15:45.000000000 +0100
+@@ -15,6 +15,7 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
++#include <string.h>
+ #include <unistd.h>
+ #include <stdint.h>
+ #include <time.h>
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/gui/engine.cc lshw-B.02.12.01/src/gui/engine.cc
+--- lshw-B.02.12.01.orig/src/gui/engine.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/gui/engine.cc	2008-02-10 21:55:40.000000000 +0100
+@@ -9,6 +9,8 @@
+ #include <iostream>
+ #include <fstream>
+ #include <sys/utsname.h>
++#include <stdlib.h>
++#include <string.h>
+ #include <libgen.h>
+ 
+ static char *id = "@(#) $Id: engine.cc 1907 2007-10-13 22:23:16Z lyonel $";
+diff -x '*~' -uNr lshw-B.02.12.01.orig/src/lshw.cc lshw-B.02.12.01/src/lshw.cc
+--- lshw-B.02.12.01.orig/src/lshw.cc	2007-10-14 00:23:16.000000000 +0200
++++ lshw-B.02.12.01/src/lshw.cc	2008-02-10 21:58:54.000000000 +0100
+@@ -8,6 +8,8 @@
+ 
+ #include <unistd.h>
+ #include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
+ #include <iostream>
+ 
+ __ID("@(#) $Id: lshw.cc 1907 2007-10-13 22:23:16Z lyonel $");
