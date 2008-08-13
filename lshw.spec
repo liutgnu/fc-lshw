@@ -36,7 +36,7 @@ plain, XML or HTML format.
 
 %prep
 %setup -q -n %{name}-%{version}
-%patch -p1
+%patch0 -p1
 
 %{__sed} -i 's|-g -Wall -g|%{optflags}|' src/Makefile
 %{__sed} -i 's|-g -Wall -Os|%{optflags}|' src/core/Makefile
