@@ -1,7 +1,7 @@
 Summary:   Hardware lister
 Name:      lshw
 Version:   B.02.13
-Release:   1%{?dist}
+Release:   2%{?dist}
 License:   GPLv2
 Group:     Applications/System
 URL:       http://ezix.org/project/wiki/HardwareLiSter
@@ -108,6 +108,9 @@ desktop-file-install --vendor fedora  \
 %{_datadir}/applications/fedora-%{name}.desktop
 
 %changelog
+* Wed Aug 13 2008 Terje Rosten <terjeros@phys.ntnu.no> - B.02.13-2
+- proper patch macro
+
 * Wed Aug 13 2008 Terje Rosten <terjeros@phys.ntnu.no> - B.02.13-1
 - B.02.13
 - remove patches now upstream
