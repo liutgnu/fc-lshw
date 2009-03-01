@@ -1,7 +1,7 @@
 Summary:   Hardware lister
 Name:      lshw
-Version:   B.02.13
-Release:   3%{?dist}
+Version:   B.02.14
+Release:   1%{?dist}
 License:   GPLv2
 Group:     Applications/System
 URL:       http://ezix.org/project/wiki/HardwareLiSter
@@ -9,7 +9,6 @@ Source0:   http://www.ezix.org/software/files/%{name}-%{version}.tar.gz
 Source1:   lshw.desktop
 Source2:   lshw.consolehelper
 Source3:   lshw.pam
-Patch0:    lshw-B.02.13-gcc43.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
@@ -36,7 +35,6 @@ plain, XML or HTML format.
 
 %prep
 %setup -q -n %{name}-%{version}
-%patch0 -p1
 
 %{__sed} -i 's|-g -Wall -g|%{optflags}|' src/Makefile
 %{__sed} -i 's|-g -Wall -Os|%{optflags}|' src/core/Makefile
@@ -108,6 +106,13 @@ desktop-file-install --vendor fedora  \
 %{_datadir}/applications/fedora-%{name}.desktop
 
 %changelog
+* Sun Mar  1 2009 Terje Rosten <terjeros@phys.ntnu.no> - B.02.14-1
+- B.02.14
+- Drop gcc43 patch now upstream
+
+* Wed Feb 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - B.02.13-4
+- rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
+
 * Wed Aug 13 2008 Terje Rosten <terjeros@phys.ntnu.no> - B.02.13-3
 - rebuild
 
