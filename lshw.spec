@@ -1,7 +1,7 @@
 Summary:   Hardware lister
 Name:      lshw
 Version:   B.02.14
-Release:   1%{?dist}
+Release:   2%{?dist}
 License:   GPLv2
 Group:     Applications/System
 URL:       http://ezix.org/project/wiki/HardwareLiSter
@@ -10,6 +10,8 @@ Source1:   lshw.desktop
 Source2:   lshw.consolehelper
 Source3:   lshw.pam
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+Requires:  hwdata
 
 %description
 lshw is a small tool to provide detailed informaton on the hardware
@@ -24,6 +26,7 @@ Information can be output in plain text, XML or HTML.
 Summary:  Graphical hardware lister
 Group:    Applications/System
 Requires: usermode
+Requires: hwdata
 Requires: %{name} = %{version}-%{release}
 BuildRequires: gtk2-devel >= 2.4
 BuildRequires: desktop-file-utils
@@ -66,6 +69,14 @@ pushd src
 
 %{__ln_s} -f gtk-lshw %{buildroot}%{_sbindir}/lshw-gui
 
+# don't package these copies, use the ones from hwdata instead
+rm -f %{buildroot}%{_datadir}/%{name}/pci.ids
+rm -f %{buildroot}%{_datadir}/%{name}/usb.ids
+# don't package these copies, they're not actually used by the app,
+# and even if they were, should use the hwdata versions
+rm -f %{buildroot}%{_datadir}/%{name}/oui.txt
+rm -f %{buildroot}%{_datadir}/%{name}/manuf.txt
+
 # desktop icon
 %{__install} -D -m 0644 -p ./src/gui/artwork/logo.svg \
      %{buildroot}%{_datadir}/pixmaps/%{name}-logo.svg
@@ -89,9 +100,6 @@ desktop-file-install --vendor fedora  \
 %doc COPYING README docs/*
 %doc %{_mandir}/man1/lshw.1*
 %{_sbindir}/%{name}
-%dir %{_datadir}/%{name}
-%{_datadir}/%{name}/*.txt
-%{_datadir}/%{name}/*.ids
 
 %files gui
 %defattr(-, root, root, -)
@@ -106,6 +114,11 @@ desktop-file-install --vendor fedora  \
 %{_datadir}/applications/fedora-%{name}.desktop
 
 %changelog
+* Wed May 06 2009 Adam Jackson <ajax@redhat.com> B.02.14-2
+- Requires: hwdata
+- Drop redundant copies of pci.ids and friends, since we'll pick up the
+  copies in hwdata at runtime.
+
 * Sun Mar  1 2009 Terje Rosten <terjeros@phys.ntnu.no> - B.02.14-1
 - B.02.14
 - Drop gcc43 patch now upstream
