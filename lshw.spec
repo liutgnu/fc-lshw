@@ -1,7 +1,7 @@
 Summary:   Hardware lister
 Name:      lshw
 Version:   B.02.14
-Release:   2%{?dist}
+Release:   3%{?dist}
 License:   GPLv2
 Group:     Applications/System
 URL:       http://ezix.org/project/wiki/HardwareLiSter
@@ -114,6 +114,9 @@ desktop-file-install --vendor fedora  \
 %{_datadir}/applications/fedora-%{name}.desktop
 
 %changelog
+* Sat Jul 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - B.02.14-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+
 * Wed May 06 2009 Adam Jackson <ajax@redhat.com> B.02.14-2
 - Requires: hwdata
 - Drop redundant copies of pci.ids and friends, since we'll pick up the
