@@ -1,7 +1,7 @@
 Summary:   Hardware lister
 Name:      lshw
 Version:   B.02.14
-Release:   4%{?dist}
+Release:   5%{?dist}
 License:   GPLv2
 Group:     Applications/System
 URL:       http://ezix.org/project/wiki/HardwareLiSter
@@ -10,6 +10,7 @@ Source1:   lshw.desktop
 Source2:   lshw.consolehelper
 Source3:   lshw.pam
 Patch0:    lshw-ext4.patch
+Patch1:    lshw-B.02.14-gcc45.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires:  hwdata
@@ -40,6 +41,7 @@ plain, XML or HTML format.
 %prep
 %setup -q -n %{name}-%{version}
 %patch0 -p0
+%patch1 -p1
 
 %{__sed} -i 's|-g -Wall -g|%{optflags}|' src/Makefile
 %{__sed} -i 's|-g -Wall -Os|%{optflags}|' src/core/Makefile
@@ -116,8 +118,11 @@ desktop-file-install --vendor fedora  \
 %{_datadir}/applications/fedora-%{name}.desktop
 
 %changelog
+* Sun Sep 05 2010 Terje Rosten <terje.rosten@ntnu.no> - B.02.14-5
+- Add patch to fix build with gcc-4.5
+
 * Sun Sep 05 2010 Terje Rosten <terje.rosten@ntnu.no> - B.02.14-4
-- Add patch to fix ext4 issue.
+- Add patch to fix ext4 issue
 
 * Sat Jul 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - B.02.14-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
