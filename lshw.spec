@@ -1,7 +1,7 @@
 Summary:   Hardware lister
 Name:      lshw
 Version:   B.02.14
-Release:   3%{?dist}
+Release:   4%{?dist}
 License:   GPLv2
 Group:     Applications/System
 URL:       http://ezix.org/project/wiki/HardwareLiSter
@@ -9,6 +9,7 @@ Source0:   http://www.ezix.org/software/files/%{name}-%{version}.tar.gz
 Source1:   lshw.desktop
 Source2:   lshw.consolehelper
 Source3:   lshw.pam
+Patch0:    lshw-ext4.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires:  hwdata
@@ -38,6 +39,7 @@ plain, XML or HTML format.
 
 %prep
 %setup -q -n %{name}-%{version}
+%patch0 -p0
 
 %{__sed} -i 's|-g -Wall -g|%{optflags}|' src/Makefile
 %{__sed} -i 's|-g -Wall -Os|%{optflags}|' src/core/Makefile
@@ -114,13 +116,16 @@ desktop-file-install --vendor fedora  \
 %{_datadir}/applications/fedora-%{name}.desktop
 
 %changelog
+* Sun Sep 05 2010 Terje Rosten <terje.rosten@ntnu.no> - B.02.14-4
+- Add patch to fix ext4 issue.
+
 * Sat Jul 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - B.02.14-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
 
-* Wed May 06 2009 Adam Jackson <ajax@redhat.com> B.02.14-2
+* Wed May 06 2009 Adam Jackson <ajax@redhat.com> - B.02.14-2
 - Requires: hwdata
 - Drop redundant copies of pci.ids and friends, since we'll pick up the
-  copies in hwdata at runtime.
+  copies in hwdata at runtime
 
 * Sun Mar  1 2009 Terje Rosten <terjeros@phys.ntnu.no> - B.02.14-1
 - B.02.14
