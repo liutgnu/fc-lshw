@@ -1,19 +1,17 @@
-Summary:   Hardware lister
-Name:      lshw
-Version:   B.02.14
-Release:   5%{?dist}
-License:   GPLv2
-Group:     Applications/System
-URL:       http://ezix.org/project/wiki/HardwareLiSter
-Source0:   http://www.ezix.org/software/files/%{name}-%{version}.tar.gz
-Source1:   lshw.desktop
-Source2:   lshw.consolehelper
-Source3:   lshw.pam
-Patch0:    lshw-ext4.patch
-Patch1:    lshw-B.02.14-gcc45.patch
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-
-Requires:  hwdata
+Summary:       Hardware lister
+Name:          lshw
+Version:       B.02.15
+Release:       1%{?dist}
+License:       GPLv2
+Group:         Applications/System
+URL:           http://ezix.org/project/wiki/HardwareLiSter
+Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
+Source1:       lshw.desktop
+Source2:       lshw.consolehelper
+Source3:       lshw.pam
+BuildRequires: sqlite-devel
+BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Requires:      hwdata
 
 %description
 lshw is a small tool to provide detailed informaton on the hardware
@@ -40,16 +38,9 @@ plain, XML or HTML format.
 
 %prep
 %setup -q -n %{name}-%{version}
-%patch0 -p0
-%patch1 -p1
-
-%{__sed} -i 's|-g -Wall -g|%{optflags}|' src/Makefile
-%{__sed} -i 's|-g -Wall -Os|%{optflags}|' src/core/Makefile
-%{__sed} -i 's|-g -Wall -Os|%{optflags}|' src/gui/Makefile
-%{__sed} -i 's|LDFLAGS= -Os -s|LDFLAGS=|' src/gui/Makefile
 
 %build
-%{__make} %{?_smp_mflags} SBINDIR="%{_sbindir}" gui 
+%{__make} %{?_smp_mflags} SBINDIR="%{_sbindir}" RPM_OPT_FLAGS="%{optflags}" SQLITE=1 gui 
 
 # Replace copyrighted icons
 pushd src
@@ -62,6 +53,8 @@ pushd src
         PREFIX="%{_prefix}"    \
         SBINDIR="%{_sbindir}"  \
         MANDIR="%{_mandir}"    \
+        SQLITE=1               \
+        STRIP="/bin/true"      \
         INSTALL="%{__install} -p"
 
 %{__make} install-gui          \
@@ -69,6 +62,8 @@ pushd src
         PREFIX="%{_prefix}"    \
         SBINDIR="%{_sbindir}"  \
         MANDIR="%{_mandir}"    \
+        SQLITE=1               \
+        STRIP="/bin/true"      \
         INSTALL="%{__install} -p"
 
 %{__ln_s} -f gtk-lshw %{buildroot}%{_sbindir}/lshw-gui
@@ -96,10 +91,12 @@ desktop-file-install --vendor fedora  \
 %{__install} -D -m 0644 %{SOURCE3} \
    %{buildroot}%{_sysconfdir}/pam.d/%{name}-gui
 
+%find_lang %{name}
+
 %clean
 %{__rm} -rf %{buildroot}
 
-%files
+%files -f %{name}.lang
 %defattr(-, root, root, -)
 %doc COPYING README docs/*
 %doc %{_mandir}/man1/lshw.1*
@@ -118,6 +115,11 @@ desktop-file-install --vendor fedora  \
 %{_datadir}/applications/fedora-%{name}.desktop
 
 %changelog
+* Sun Nov 21 2010 Terje Rosten <terje.rosten@ntnu.no> - B.02.15-1
+- B.02.15
+- Remove patches now upstream
+- Build with sqlite support
+
 * Sun Sep 05 2010 Terje Rosten <terje.rosten@ntnu.no> - B.02.14-5
 - Add patch to fix build with gcc-4.5
 
