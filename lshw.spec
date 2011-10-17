@@ -1,7 +1,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.15
-Release:       2%{?dist}
+Release:       3%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -110,11 +110,14 @@ desktop-file-install --vendor fedora  \
 %{_bindir}/%{name}-gui
 %{_sbindir}/gtk-%{name}
 %{_sbindir}/%{name}-gui
-%{_datadir}/%{name}/artwork
+%{_datadir}/%{name}
 %{_datadir}/pixmaps/%{name}-logo.svg
 %{_datadir}/applications/fedora-%{name}.desktop
 
 %changelog
+* Mon Oct 17 2011 Terje Rosten <terje.rosten@ntnu.no> - B.02.15-3
+- Own all dirs
+
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - B.02.15-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
