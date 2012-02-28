@@ -1,7 +1,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.16
-Release:       1%{?dist}
+Release:       2%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -115,6 +115,9 @@ desktop-file-install --vendor fedora  \
 %{_datadir}/applications/fedora-%{name}.desktop
 
 %changelog
+* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - B.02.16-2
+- Rebuilt for c++ ABI breakage
+
 * Sun Jan 29 2012 Terje Rosten <terje.rosten@ntnu.no> - B.02.16-1
 - B.02.16
 
