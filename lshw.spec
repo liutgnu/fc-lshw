@@ -1,14 +1,14 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.16
-Release:       2%{?dist}
+Release:       3%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
 Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
 Source1:       lshw.desktop
-Source2:       lshw.consolehelper
-Source3:       lshw.pam
+Source2:       org.ezix.lshw.gui.policy
+Source3:       lshw-gui
 BuildRequires: sqlite-devel
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      hwdata
@@ -22,22 +22,21 @@ PowerPC machines (PowerMac G4 is known to work).
 
 Information can be output in plain text, XML or HTML.
 
-%package gui
-Summary:  Graphical hardware lister
-Group:    Applications/System
-Requires: usermode
-Requires: hwdata
-Requires: %{name} = %{version}-%{release}
+%package       gui
+Summary:       Graphical hardware lister
+Group:         Applications/System
+Requires:      polkit
+Requires:      %{name} = %{version}-%{release}
 BuildRequires: gtk2-devel >= 2.4
 BuildRequires: desktop-file-utils
 
-%description gui
+%description   gui
 Graphical frontend for the hardware lister (lshw) tool.
 If desired, hardware information can be saved to file in
 plain, XML or HTML format.
 
 %prep
-%setup -q -n %{name}-%{version}
+%setup -q
 
 %build
 %{__make} %{?_smp_mflags} SBINDIR="%{_sbindir}" RPM_OPT_FLAGS="%{optflags}" SQLITE=1 gui 
@@ -69,27 +68,23 @@ pushd src
 %{__ln_s} -f gtk-lshw %{buildroot}%{_sbindir}/lshw-gui
 
 # don't package these copies, use the ones from hwdata instead
-rm -f %{buildroot}%{_datadir}/%{name}/pci.ids
-rm -f %{buildroot}%{_datadir}/%{name}/usb.ids
+%{__rm} -f %{buildroot}%{_datadir}/%{name}/pci.ids
+%{__rm} -f %{buildroot}%{_datadir}/%{name}/usb.ids
 # don't package these copies, they're not actually used by the app,
 # and even if they were, should use the hwdata versions
-rm -f %{buildroot}%{_datadir}/%{name}/oui.txt
-rm -f %{buildroot}%{_datadir}/%{name}/manuf.txt
+%{__rm} -f %{buildroot}%{_datadir}/%{name}/oui.txt
+%{__rm} -f %{buildroot}%{_datadir}/%{name}/manuf.txt
 
 # desktop icon
 %{__install} -D -m 0644 -p ./src/gui/artwork/logo.svg \
      %{buildroot}%{_datadir}/pixmaps/%{name}-logo.svg
-
 desktop-file-install --vendor fedora  \
   --dir %{buildroot}%{_datadir}/applications %{SOURCE1}
 
-# consolehelper
-%{__install} -d %{buildroot}%{_bindir}
-%{__ln_s} -f consolehelper %{buildroot}%{_bindir}/%{name}-gui
+# PolicyKit
 %{__install} -D -m 0644 %{SOURCE2} \
-   %{buildroot}%{_sysconfdir}/security/console.apps/%{name}-gui
-%{__install} -D -m 0644 %{SOURCE3} \
-   %{buildroot}%{_sysconfdir}/pam.d/%{name}-gui
+    %{buildroot}%{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
+%{__install} -D -m 0755 %{SOURCE3} %{buildroot}%{_bindir}/lshw-gui
 
 %find_lang %{name}
 
@@ -105,16 +100,18 @@ desktop-file-install --vendor fedora  \
 %files gui
 %defattr(-, root, root, -)
 %doc COPYING
-%config(noreplace) %{_sysconfdir}/pam.d/%{name}-gui
-%config(noreplace) %{_sysconfdir}/security/console.apps/%{name}-gui
 %{_bindir}/%{name}-gui
 %{_sbindir}/gtk-%{name}
 %{_sbindir}/%{name}-gui
 %{_datadir}/%{name}
 %{_datadir}/pixmaps/%{name}-logo.svg
 %{_datadir}/applications/fedora-%{name}.desktop
+%{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Tue May 08 2012 Terje Rosten <terje.rosten@ntnu.no> - B.02.16-3
+- Switch from consolehelper to PolicyKit (bz #502730)
+
 * Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - B.02.16-2
 - Rebuilt for c++ ABI breakage
 
