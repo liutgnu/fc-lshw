@@ -1,7 +1,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.16
-Release:       3%{?dist}
+Release:       4%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -109,6 +109,9 @@ desktop-file-install --vendor fedora  \
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Thu Jul 19 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - B.02.16-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
 * Tue May 08 2012 Terje Rosten <terje.rosten@ntnu.no> - B.02.16-3
 - Switch from consolehelper to PolicyKit (bz #502730)
 
