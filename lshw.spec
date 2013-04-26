@@ -1,7 +1,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.16
-Release:       5%{?dist}
+Release:       6%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -78,7 +78,7 @@ pushd src
 # desktop icon
 %{__install} -D -m 0644 -p ./src/gui/artwork/logo.svg \
      %{buildroot}%{_datadir}/pixmaps/%{name}-logo.svg
-desktop-file-install --vendor fedora  \
+desktop-file-install \
   --dir %{buildroot}%{_datadir}/applications %{SOURCE1}
 
 # PolicyKit
@@ -105,10 +105,13 @@ desktop-file-install --vendor fedora  \
 %{_sbindir}/%{name}-gui
 %{_datadir}/%{name}
 %{_datadir}/pixmaps/%{name}-logo.svg
-%{_datadir}/applications/fedora-%{name}.desktop
+%{_datadir}/applications/*%{name}.desktop
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Fri Apr 26 2013 Jon Ciesla <limburgher@gmail.com> - B.02.16-6
+- Drop desktop vendor tag.
+
 * Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - B.02.16-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
