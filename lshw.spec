@@ -1,11 +1,11 @@
 %if 0%{?fedora} <= 18
-%global vendor 1
+%global vendortag 1
 %endif
 
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.16
-Release:       7%{?dist}
+Release:       8%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -82,7 +82,7 @@ pushd src
 # desktop icon
 %{__install} -D -m 0644 -p ./src/gui/artwork/logo.svg \
      %{buildroot}%{_datadir}/pixmaps/%{name}-logo.svg
-desktop-file-install %{?vendor:--vendor fedora} \
+desktop-file-install %{?vendortag:--vendor fedora} \
   --dir %{buildroot}%{_datadir}/applications %{SOURCE1}
 
 # PolicyKit
@@ -116,6 +116,9 @@ rm -rf %{buildroot}%{_datadir}/locale/fr/
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Sun Jun 09 2013 Terje Rosten <terje.rosten@ntnu.no> - B.02.16-8
+- Rename macro
+
 * Sun Jun 09 2013 Terje Rosten <terje.rosten@ntnu.no> - B.02.16-7
 - Fix desktop file (bz #953684)
 - Remove broken translations (bz #905896)
