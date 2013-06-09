@@ -1,7 +1,11 @@
+%if 0%{?fedora} <= 18
+%global vendor 1
+%endif
+
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.16
-Release:       6%{?dist}
+Release:       7%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -78,7 +82,7 @@ pushd src
 # desktop icon
 %{__install} -D -m 0644 -p ./src/gui/artwork/logo.svg \
      %{buildroot}%{_datadir}/pixmaps/%{name}-logo.svg
-desktop-file-install \
+desktop-file-install %{?vendor:--vendor fedora} \
   --dir %{buildroot}%{_datadir}/applications %{SOURCE1}
 
 # PolicyKit
@@ -86,12 +90,15 @@ desktop-file-install \
     %{buildroot}%{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 %{__install} -D -m 0755 %{SOURCE3} %{buildroot}%{_bindir}/lshw-gui
 
-%find_lang %{name}
+# translations seems borken, remove for now
+#find_lang %{name}
+rm -rf %{buildroot}%{_datadir}/locale/fr/
 
 %clean
 %{__rm} -rf %{buildroot}
 
-%files -f %{name}.lang
+#files -f %{name}.lang
+%files
 %defattr(-, root, root, -)
 %doc COPYING README docs/*
 %doc %{_mandir}/man1/lshw.1*
@@ -109,6 +116,11 @@ desktop-file-install \
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Sun Jun 09 2013 Terje Rosten <terje.rosten@ntnu.no> - B.02.16-7
+- Fix desktop file (bz #953684)
+- Remove broken translations (bz #905896)
+- Add vendor macro
+ 
 * Fri Apr 26 2013 Jon Ciesla <limburgher@gmail.com> - B.02.16-6
 - Drop desktop vendor tag.
 
