@@ -5,7 +5,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.16
-Release:       8%{?dist}
+Release:       9%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -116,6 +116,9 @@ rm -rf %{buildroot}%{_datadir}/locale/fr/
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - B.02.16-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
+
 * Sun Jun 09 2013 Terje Rosten <terje.rosten@ntnu.no> - B.02.16-8
 - Rename macro
 
