@@ -1,11 +1,11 @@
 %if 0%{?fedora} <= 18
-%global vendortag 1
+%global        vendortag 1
 %endif
 
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.17
-Release:       1%{?dist}
+Release:       2%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -13,8 +13,8 @@ Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
 Source1:       lshw.desktop
 Source2:       org.ezix.lshw.gui.policy
 Source3:       lshw-gui
+Patch0:        lshw-B.02.17-scan-fat-mem-bug.patch
 BuildRequires: sqlite-devel
-BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:      hwdata
 
 %description
@@ -41,6 +41,7 @@ plain, XML or HTML format.
 
 %prep
 %setup -q
+%patch0 -p0
 
 %build
 %{__make} %{?_smp_mflags} SBINDIR="%{_sbindir}" RPM_OPT_FLAGS="%{optflags}" SQLITE=1 gui 
@@ -50,7 +51,6 @@ pushd src
 %{__make} nologo
 
 %install
-%{__rm} -rf %{buildroot}
 %{__make} install              \
         DESTDIR="%{buildroot}" \
         PREFIX="%{_prefix}"    \
@@ -94,18 +94,13 @@ desktop-file-install %{?vendortag:--vendor fedora} \
 #find_lang %{name}
 rm -rf %{buildroot}%{_datadir}/locale/fr/
 
-%clean
-%{__rm} -rf %{buildroot}
-
 #files -f %{name}.lang
 %files
-%defattr(-, root, root, -)
 %doc COPYING README docs/*
 %doc %{_mandir}/man1/lshw.1*
 %{_sbindir}/%{name}
 
 %files gui
-%defattr(-, root, root, -)
 %doc COPYING
 %{_bindir}/%{name}-gui
 %{_sbindir}/gtk-%{name}
@@ -116,6 +111,9 @@ rm -rf %{buildroot}%{_datadir}/locale/fr/
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Mon Sep 30 2013 Terje Rosten <terje.rosten@ntnu.no> - B.02.17-2
+- Add patch to fix segfault in scan fat code
+
 * Thu Sep 26 2013 Terje Rosten <terje.rosten@ntnu.no> - B.02.17-1
 - B.02.17
 
