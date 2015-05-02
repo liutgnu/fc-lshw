@@ -5,7 +5,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.17
-Release:       4%{?dist}
+Release:       5%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -111,6 +111,9 @@ rm -rf %{buildroot}%{_datadir}/locale/fr/
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Sat May 02 2015 Kalev Lember <kalevlember@gmail.com> - B.02.17-5
+- Rebuilt for GCC 5 C++11 ABI change
+
 * Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - B.02.17-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
