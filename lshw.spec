@@ -209,7 +209,7 @@ rm -rf %{buildroot}%{_datadir}/locale/fr/
 * Mon Feb 11 2008 Terje Rosten <terjeros@phys.ntnu.no> - B.02.12.01-3
 - add patch to build with gcc-4.3
 
-* Mon Sat  9 2008 Terje Rosten <terjeros@phys.ntnu.no> - B.02.12.01-2
+* Sat Feb 09 2008 Terje Rosten <terjeros@phys.ntnu.no> - B.02.12.01-2
 - rebuild
 
 * Mon Nov  5 2007 Terje Rosten <terjeros@phys.ntnu.no> - B.02.12.01-1
