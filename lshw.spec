@@ -1,7 +1,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.18
-Release:       3%{?dist}
+Release:       4%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -10,6 +10,8 @@ Source1:       lshw.desktop
 Source2:       org.ezix.lshw.gui.policy
 Source3:       lshw-gui
 Patch1:        lshw-B.02.18-non-root.patch
+Patch2:        lshw-B.02.18-long-bit.patch
+Patch3:        lshw-B.02.18-scandir.patch
 Requires:      hwdata
 %description
 lshw is a small tool to provide detailed informaton on the hardware
@@ -35,6 +37,8 @@ format.
 %prep
 %setup -q
 %patch01 -p1
+%patch02 -p1
+%patch03 -p1
 
 %build
 make %{?_smp_mflags} SBINDIR="%{_sbindir}" RPM_OPT_FLAGS="%{optflags}" gui
@@ -103,6 +107,9 @@ rm -rf %{buildroot}%{_datadir}/locale/fr/
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Thu Aug 11 2016 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-4
+- Add patches to fix sysconf/long_bit issue and crash (bz#1342792)
+
 * Wed May 18 2016 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-3
 - Add patch to fix crash (bz#1332486)
 
