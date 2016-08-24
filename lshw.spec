@@ -107,7 +107,7 @@ rm -rf %{buildroot}%{_datadir}/locale/fr/
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
-* Wed Aug 23 2016 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-5
+* Wed Aug 24 2016 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-5
 - Modify lshw gui wrapper to fix bz#1368404
 
 * Thu Aug 11 2016 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-4
