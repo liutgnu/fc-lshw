@@ -1,7 +1,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.18
-Release:       8%{?dist}
+Release:       9%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -107,6 +107,9 @@ rm -rf %{buildroot}%{_datadir}/locale/fr/
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - B.02.18-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
+
 * Wed Jul 26 2017 Fedora Release Engineering <releng@fedoraproject.org> - B.02.18-8
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
 
