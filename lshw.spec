@@ -1,7 +1,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.18
-Release:       9%{?dist}
+Release:       10%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -9,9 +9,13 @@ Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
 Source1:       lshw.desktop
 Source2:       org.ezix.lshw.gui.policy
 Source3:       lshw-gui
+Source4:       lshw-gui.appdata.xml
 Patch1:        lshw-B.02.18-non-root.patch
 Patch2:        lshw-B.02.18-long-bit.patch
 Patch3:        lshw-B.02.18-scandir.patch
+BuildRequires: gtk2-devel >= 2.4
+BuildRequires: desktop-file-utils
+BuildRequires: libappstream-glib
 Requires:      hwdata
 %description
 lshw is a small tool to provide detailed informaton on the hardware
@@ -27,8 +31,6 @@ Summary:       Graphical hardware lister
 Group:         Applications/System
 Requires:      polkit
 Requires:      %{name} = %{version}-%{release}
-BuildRequires: gtk2-devel >= 2.4
-BuildRequires: desktop-file-utils
 %description   gui
 Graphical frontend for the hardware lister (lshw) tool. If desired,
 hardware information can be saved to file in plain, XML or HTML
@@ -85,9 +87,16 @@ install -D -m 0644 %{SOURCE2} \
     %{buildroot}%{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 install -D -m 0755 %{SOURCE3} %{buildroot}%{_bindir}/lshw-gui
 
+# AppData
+install -D -m 0644 %{SOURCE4} \
+    %{buildroot}%{_datadir}/appdata/lshw-gui.appdata.xml
+
 # translations seems borken, remove for now
 #find_lang %{name}
 rm -rf %{buildroot}%{_datadir}/locale/fr/
+
+%check
+appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata.xml
 
 #files -f %{name}.lang
 %files
@@ -104,9 +113,13 @@ rm -rf %{buildroot}%{_datadir}/locale/fr/
 %{_datadir}/%{name}
 %{_datadir}/pixmaps/%{name}-logo.svg
 %{_datadir}/applications/*%{name}.desktop
+%{_datadir}/appdata/%{name}-gui.appdata.xml
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Sun Aug 13 2017 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-10
+- Add AppData bz#1476498
+
 * Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - B.02.18-9
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
