@@ -1,12 +1,12 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.18
-Release:       10%{?dist}
+Release:       11%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
 Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
-Source1:       lshw.desktop
+Source1:       lshw-gui.desktop
 Source2:       org.ezix.lshw.gui.policy
 Source3:       lshw-gui
 Source4:       lshw-gui.appdata.xml
@@ -66,7 +66,8 @@ make install-gui               \
         STRIP="/bin/true"      \
         INSTALL="install -p"
 
-ln -s -f gtk-lshw %{buildroot}%{_sbindir}/lshw-gui
+mv %{buildroot}%{_sbindir}/gtk-lshw %{buildroot}%{_sbindir}/lshw-gui
+ln -s -f lshw-gui %{buildroot}%{_sbindir}/gtk-lshw
 
 # don't package these copies, use the ones from hwdata instead
 rm -f %{buildroot}%{_datadir}/%{name}/pci.ids
@@ -78,7 +79,9 @@ rm -f %{buildroot}%{_datadir}/%{name}/manuf.txt
 
 # desktop icon
 install -D -m 0644 -p ./src/gui/artwork/logo.svg \
-     %{buildroot}%{_datadir}/pixmaps/%{name}-logo.svg
+     %{buildroot}%{_datadir}/pixmaps/%{name}-gui.svg
+install -D -m 0644 -p ./src/gui/artwork/logo.svg \
+     %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/%{name}-gui.svg
 desktop-file-install %{?vendortag:--vendor fedora} \
   --dir %{buildroot}%{_datadir}/applications %{SOURCE1}
 
@@ -111,12 +114,16 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata
 %{_sbindir}/gtk-%{name}
 %{_sbindir}/%{name}-gui
 %{_datadir}/%{name}
-%{_datadir}/pixmaps/%{name}-logo.svg
-%{_datadir}/applications/*%{name}.desktop
+%{_datadir}/pixmaps/%{name}-gui.svg
+%{_datadir}/icons/hicolor/scalable/apps/%{name}-gui.svg
+%{_datadir}/applications/%{name}-gui.desktop
 %{_datadir}/appdata/%{name}-gui.appdata.xml
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Mon Aug 28 2017 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-11
+- Prefer lshw-gui in lshw-gui context
+
 * Sun Aug 13 2017 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-10
 - Add AppData bz#1476498
 
