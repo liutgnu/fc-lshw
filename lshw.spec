@@ -1,7 +1,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.18
-Release:       12%{?dist}
+Release:       13%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -119,6 +119,9 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Fri Jan 26 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-13
+- Fix date
+
 * Fri Jan 26 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-12
 - Update to commit d05baa7
 
