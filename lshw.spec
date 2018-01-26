@@ -119,7 +119,7 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
-* Sat Jan 26 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-12
+* Fri Jan 26 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-12
 - Update to commit d05baa7
 
 * Mon Aug 28 2017 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-11
