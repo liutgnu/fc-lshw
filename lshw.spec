@@ -1,7 +1,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.18
-Release:       11%{?dist}
+Release:       12%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -10,9 +10,8 @@ Source1:       lshw-gui.desktop
 Source2:       org.ezix.lshw.gui.policy
 Source3:       lshw-gui
 Source4:       lshw-gui.appdata.xml
-Patch1:        lshw-B.02.18-non-root.patch
-Patch2:        lshw-B.02.18-long-bit.patch
-Patch3:        lshw-B.02.18-scandir.patch
+Patch1:        lshw-B.02.18-scandir.patch
+Patch2:        lshw-B.02.18-d05baa7.patch
 BuildRequires: gtk2-devel >= 2.4
 BuildRequires: desktop-file-utils
 BuildRequires: libappstream-glib
@@ -40,7 +39,6 @@ format.
 %setup -q
 %patch01 -p1
 %patch02 -p1
-%patch03 -p1
 
 %build
 make %{?_smp_mflags} SBINDIR="%{_sbindir}" RPM_OPT_FLAGS="%{optflags}" gui
@@ -121,6 +119,9 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Sat Jan 26 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-12
+- Update to commit d05baa7
+
 * Mon Aug 28 2017 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-11
 - Prefer lshw-gui in lshw-gui context
 
