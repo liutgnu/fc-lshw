@@ -12,6 +12,7 @@ Source3:       lshw-gui
 Source4:       lshw-gui.appdata.xml
 Patch1:        lshw-B.02.18-scandir.patch
 Patch2:        lshw-B.02.18-d05baa7.patch
+BuildRequires: gettext
 BuildRequires: gtk2-devel >= 2.4
 BuildRequires: desktop-file-utils
 BuildRequires: libappstream-glib
@@ -119,6 +120,9 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Fri Jan 26 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-14
+- Need gettext
+
 * Fri Jan 26 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-13
 - Fix date
 
