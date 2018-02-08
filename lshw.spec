@@ -1,7 +1,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.18
-Release:       14%{?dist}
+Release:       15%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -12,10 +12,12 @@ Source3:       lshw-gui
 Source4:       lshw-gui.appdata.xml
 Patch1:        lshw-B.02.18-scandir.patch
 Patch2:        lshw-B.02.18-d05baa7.patch
+Patch3:        lshw-B.02.18-revert-json.patch
+BuildRequires: desktop-file-utils
 BuildRequires: gettext
 BuildRequires: gtk2-devel >= 2.4
-BuildRequires: desktop-file-utils
 BuildRequires: libappstream-glib
+BuildRequires: python3-devel
 Requires:      hwdata
 %description
 lshw is a small tool to provide detailed informaton on the hardware
@@ -40,6 +42,7 @@ format.
 %setup -q
 %patch01 -p1
 %patch02 -p1
+%patch03 -R -p1
 
 %build
 make %{?_smp_mflags} SBINDIR="%{_sbindir}" RPM_OPT_FLAGS="%{optflags}" gui
@@ -100,6 +103,12 @@ rm -rf %{buildroot}%{_datadir}/locale/fr/
 %check
 appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata.xml
 
+# check json output is valid
+src/lshw -json \
+    -disable usb -disable pcmcia -disable isapnp \
+    -disable ide -disable scsi -disable dmi -disable memory \
+    -disable cpuinfo 2>/dev/null | %{__python3} -m json.tool
+
 #files -f %{name}.lang
 %files
 %license COPYING
@@ -120,14 +129,15 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Thu Feb 08 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-15
+- Fix JSON issue (rhbz#1543320)
+
 * Thu Feb 08 2018 Fedora Release Engineering <releng@fedoraproject.org> - B.02.18-14
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
 
-* Fri Jan 26 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-14
-- Need gettext
-
 * Fri Jan 26 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-13
 - Fix date
+- Need gettext
 
 * Fri Jan 26 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-12
 - Update to commit d05baa7

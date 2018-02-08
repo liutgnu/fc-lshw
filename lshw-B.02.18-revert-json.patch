@@ -1,0 +1,66 @@
+commit 135a853c60582b14c5b67e5cd988a8062d9896f4
+Author: Lyonel Vincent <lyonel@ezix.org>
+Date:   Fri Apr 28 16:54:42 2017 +0200
+
+    Fix JSON output format
+    
+    cf. https://github.com/lyonel/lshw/pull/28
+
+diff --git a/src/core/hw.cc b/src/core/hw.cc
+index 68e5912..9defd26 100644
+--- a/src/core/hw.cc
++++ b/src/core/hw.cc
+@@ -1368,9 +1368,14 @@ string hwNode::asJSON(unsigned level)
+   config = getConfigKeys();
+   resources = getResources("\" value=\"");
+ 
++  if (level == 0)
++  {
++    out << "[" << endl;
++  }
++
+   if(visible(getClassName()))
+   {
+-    out << "{" << endl;
++    out << spaces(2*level) << "{" << endl;
+     out << spaces(2*level+2) << "\"id\" : \"" << getId() << "\"," << endl;
+     out << spaces(2*level+2) << "\"class\" : \"" << getClassName() << "\"";
+ 
+@@ -1613,20 +1618,13 @@ string hwNode::asJSON(unsigned level)
+     resources.clear();
+   }
+ 
+-  
+-  if(countChildren()>0)
++  for (unsigned int i = 0; i < countChildren(); i++)
+   {
+-    if(visible(getClassName()))
+-      out << "," << endl << spaces(2*level+2) << "\"children\" : [" << endl;
+-
+-    for (unsigned int i = 0; i < countChildren(); i++)
++    out << getChild(i)->asJSON(visible(getClassName()) ? level + 2 : 1);
++    if (visible(getChild(i)->getClassName()))
+     {
+-      out << spaces(2*level+4) << getChild(i)->asJSON(visible(getClassName()) ? level + 2 : 1);
+-      if(visible(getChild(i)->getClassName()) && (i < countChildren()-1)) out << "," << endl;
++      out << "," << endl;
+     }
+-
+-    if(visible(getClassName()))
+-      out << endl << spaces(2*level+2) << "]";
+   }
+ 
+   if(visible(getClassName()))
+@@ -1635,6 +1633,12 @@ string hwNode::asJSON(unsigned level)
+     out << "}";
+   }
+ 
++  if (level == 0)
++  {
++    out.seekp(-2, std::ios_base::end);
++    out << endl << "]" << endl;
++  }
++
+   return out.str();
+ }
+ 
