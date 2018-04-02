@@ -26,7 +26,7 @@ index 0103377..8fe665e 100644
 +	tar --transform s!^!$(PACKAGENAME)-$(VERSION)/! -rf $(PACKAGENAME)-$(VERSION).tar $^
  	gzip -f $(PACKAGENAME)-$(VERSION).tar
 diff --git a/README.md b/README.md
-index 64e8b0f..12b4f79 100644
+index 64e8b0f..7afcae6 100644
 --- a/README.md
 +++ b/README.md
 @@ -13,7 +13,7 @@ Installation
@@ -38,7 +38,16 @@ index 64e8b0f..12b4f79 100644
     - a PA-RISC-, Alpha-, IA-64- (Itanium-), PowerPC-, ARM- or x86- based machine
     - an ANSI (or close enough to ANSI compliance) C++ compiler (tested with g++ 2.95.4 and 3.x)
     - for the (optional) GTK+ graphical user interface, you will need a
-@@ -28,8 +28,16 @@ Installation
+@@ -23,13 +23,25 @@ Installation
+ 
+     	$ make
+ 
++    To complile with zlib support (see below), use:
++
++    	$ make ZLIB=1
++
+  3. If you want to build the optional GUI, do:
+ 
      	$ make
      	$ make gui
  
@@ -57,7 +66,25 @@ index 64e8b0f..12b4f79 100644
   
     Please make sure you include enough information in your bug report: XML output from lshw is preferred over text or HTML, indicate the affected version of lshw, your platform (i386, x86-64, PA-RISC, PowerPC, etc.) and your distribution.
  
-@@ -55,5 +63,4 @@ or
+@@ -38,13 +50,15 @@ NOTE TO DISTRIBUTIONS
+ 
+ By default, lshw includes its own lists of PCI IDs, USB IDs, etc. but will also look for this information in
+ 
+-    /usr/share/lshw/,
+-    /usr/local/share/,
++	/usr/share/lshw/,
++	/usr/local/share/,
+ 	/usr/share/,
+ 	/etc/,
+ 	/usr/share/hwdata/,
+ 	/usr/share/misc/
+ 
++If compiled with zlib support, lshw will look for `file`.gz first, then for `file`.
++
+ Statically-linked and/or compressed binaries can be built by using
+ 
+     $ make static
+@@ -55,5 +69,4 @@ or
  
  in the `src/` directory
  
@@ -90,10 +117,22 @@ index b46a33e..b513fa2 100644
  
    <xs:complexType name="measured">
 diff --git a/src/Makefile b/src/Makefile
-index b50586b..cf11dd2 100644
+index b50586b..917bf6b 100644
 --- a/src/Makefile
 +++ b/src/Makefile
-@@ -20,7 +20,7 @@ export SQLITE
+@@ -3,6 +3,7 @@ export PACKAGENAME
+ VERSION?= $(shell git describe --tags --long | cut -d - -f 1,2 | tr - .)
+ 
+ SQLITE?=0
++ZLIB?=0
+ 
+ DESTDIR?=/
+ PREFIX?=/usr
+@@ -17,35 +18,49 @@ export SBINDIR
+ export MANDIR
+ export DATADIR
+ export SQLITE
++export ZLIB
  
  CXX?=c++
  INCLUDES=-I./core/
@@ -102,7 +141,12 @@ index b50586b..cf11dd2 100644
  CXXFLAGS=-g -Wall -g $(INCLUDES) $(DEFINES) $(RPM_OPT_FLAGS)
  ifeq ($(SQLITE), 1)
  	CXXFLAGS+= -DSQLITE $(shell pkg-config --cflags sqlite3)
-@@ -30,7 +30,7 @@ ifneq ($(shell $(LD) --help 2| grep -- --as-needed), )
+ endif
++ifeq ($(ZLIB), 1)
++	CXXFLAGS+= -DZLIB $(shell pkg-config --cflags zlib)
++endif
+ LDFLAGS=-L./core/ -g
+ ifneq ($(shell $(LD) --help 2| grep -- --as-needed), )
  	LDFLAGS+= -Wl,--as-needed
  endif
  LDSTATIC=-static
@@ -111,16 +155,33 @@ index b50586b..cf11dd2 100644
  ifeq ($(SQLITE), 1)
  	LIBS+= $(shell pkg-config --libs sqlite3)
  endif
-@@ -39,7 +39,7 @@ export CXXFLAGS
++ifeq ($(ZLIB), 1)
++	LIBS+= $(shell pkg-config --libs zlib)
++endif
+ 
+ export CXXFLAGS
  export LIBS
  export LDFLAGS
  
 -DATAFILES = pci.ids usb.ids oui.txt manuf.txt
++ifeq ($(ZLIB), 1)
++DATAFILES = pci.ids.gz usb.ids.gz oui.txt.gz manuf.txt.gz pnp.ids.gz pnpid.txt.gz
++else
 +DATAFILES = pci.ids usb.ids oui.txt manuf.txt pnp.ids pnpid.txt
++endif
  
  all: $(PACKAGENAME) $(PACKAGENAME).1 $(DATAFILES)
  
-@@ -93,6 +93,12 @@ oui.txt:
+ .cc.o:
+ 	$(CXX) $(CXXFLAGS) -c $< -o $@
+ 
++%.gz: %
++	gzip -c $< > $@
++
+ .PHONY: core
+ core:
+ 	+make -C core all
+@@ -93,6 +108,12 @@ oui.txt:
  manuf.txt:
  	wget -O $@ http://anonsvn.wireshark.org/wireshark/trunk/manuf
  
@@ -133,6 +194,14 @@ index b50586b..cf11dd2 100644
  install: all
  	$(INSTALL) -d -m 0755 $(DESTDIR)/$(SBINDIR)
  	$(INSTALL) -m 0755 $(PACKAGENAME) $(DESTDIR)/$(SBINDIR)
+@@ -112,6 +133,7 @@ install-gui: gui
+ 	
+ clean:
+ 	rm -f $(PACKAGENAME).o $(PACKAGENAME) $(PACKAGENAME)-static $(PACKAGENAME)-compressed
++	rm -f $(addsuffix .gz,$(DATAFILES))
+ 	make -C core clean
+ 	make -C gui clean
+ 
 diff --git a/src/core/Makefile b/src/core/Makefile
 index 5bf5a69..884a963 100644
 --- a/src/core/Makefile
@@ -191,7 +260,7 @@ index 76e5082..adff7b5 100644
    pushd(PROC_SYS);
  
 diff --git a/src/core/cpuinfo.cc b/src/core/cpuinfo.cc
-index 5a2b8c0..f5665fb 100644
+index 5a2b8c0..8a72d98 100644
 --- a/src/core/cpuinfo.cc
 +++ b/src/core/cpuinfo.cc
 @@ -13,6 +13,13 @@ __ID("@(#) $Id$");
@@ -290,16 +359,70 @@ index 5a2b8c0..f5665fb 100644
  static vector <string> aarch64_features;
  static string aarch64_processor_name;
  static void cpuinfo_aarch64(hwNode & node,
-@@ -237,7 +260,7 @@ static void cpuinfo_aarch64(hwNode & node,
-               if (node.getDescription() == "")
-                 node.setDescription(aarch64_processor_name);
-               cpu->claim(true);
+@@ -218,50 +241,45 @@ static void cpuinfo_aarch64(hwNode & node,
+ 
+   if (id == "Features")
+     {
+-      while (value.length() > 0)
+-        {
+-          size_t pos = value.find(' ');
+-          string capability = (pos==string::npos)?value:value.substr(0, pos);
+-          aarch64_features.push_back(capability);
+-          if (pos == string::npos)
+-            value = "";
+-          else
+-            value = hw::strip(value.substr(pos));
+-        }
+-      for(int i=0; i<=currentcpu; i++)
++      hwNode *cpu = getcpu(node, currentcpu);
++      if (cpu)
+         {
+-          hwNode *cpu = getcpu(node, i);
+-          if (cpu)
++          cpu->addHint("logo", string("aarch64"));
++          if (node.getDescription() == "")
++            node.setDescription(aarch64_processor_name);
++          cpu->claim(true);
++
++          while (value.length() > 0)
++            {
++              size_t pos = value.find(' ');
++              string capability = (pos==string::npos)?value:value.substr(0, pos);
++              aarch64_features.push_back(capability);
++              if (pos == string::npos)
++                value = "";
++              else
++                value = hw::strip(value.substr(pos));
++            }
++
++          for(size_t i=0; i < aarch64_features.size(); i++)
+             {
+-              cpu->addHint("logo", string("aarch64"));
+-              if (node.getDescription() == "")
+-                node.setDescription(aarch64_processor_name);
+-              cpu->claim(true);
 -              for(int i=0; i < aarch64_features.size(); i++)
-+              for(size_t i=0; i < aarch64_features.size(); i++)
-                 {
-                   cpu->addCapability(aarch64_features[i]);
-                   cpu->describeCapability("fp", "Floating point instructions");
-@@ -253,15 +276,11 @@ static void cpuinfo_aarch64(hwNode & node,
+-                {
+-                  cpu->addCapability(aarch64_features[i]);
+-                  cpu->describeCapability("fp", "Floating point instructions");
+-                  cpu->describeCapability("asimd", "Advanced SIMD");
+-                  cpu->describeCapability("evtstrm", "Event stream");
+-                  cpu->describeCapability("aes", "AES instructions");
+-                  cpu->describeCapability("pmull", "PMULL instruction");
+-                  cpu->describeCapability("sha1", "SHA1 instructions");
+-                  cpu->describeCapability("sha2", "SHA2 instructions");
+-                  cpu->describeCapability("crc32", "CRC extension");
+-                }
++              cpu->addCapability(aarch64_features[i]);
++              cpu->describeCapability("fp", "Floating point instructions");
++              cpu->describeCapability("asimd", "Advanced SIMD");
++              cpu->describeCapability("evtstrm", "Event stream");
++              cpu->describeCapability("aes", "AES instructions");
++              cpu->describeCapability("pmull", "PMULL instruction");
++              cpu->describeCapability("sha1", "SHA1 instructions");
++              cpu->describeCapability("sha2", "SHA2 instructions");
++              cpu->describeCapability("crc32", "CRC extension");
+             }
          }
      }
  }
@@ -315,7 +438,7 @@ index 5a2b8c0..f5665fb 100644
  
    if (id == "processor")
      currentcpu++;
-@@ -307,9 +326,7 @@ string value)
+@@ -307,9 +325,7 @@ string value)
      }
    }
  }
@@ -325,7 +448,7 @@ index 5a2b8c0..f5665fb 100644
  static void cpuinfo_hppa(hwNode & node,
  string id,
  string value)
-@@ -343,9 +360,7 @@ string value)
+@@ -343,9 +359,7 @@ string value)
      }
    }
  }
@@ -335,7 +458,7 @@ index 5a2b8c0..f5665fb 100644
  static void cpuinfo_alpha(hwNode & node,
  string id,
  string value)
-@@ -403,9 +418,7 @@ string value)
+@@ -403,9 +417,7 @@ string value)
        mycpu->enable();
    }
  }
@@ -345,7 +468,7 @@ index 5a2b8c0..f5665fb 100644
  static void cpuinfo_x86(hwNode & node,
  string id,
  string value)
-@@ -549,7 +562,6 @@ string value)
+@@ -549,7 +561,6 @@ string value)
      if(node.getWidth()==0) node.setWidth(cpu->getWidth());
    }
  }
@@ -353,7 +476,7 @@ index 5a2b8c0..f5665fb 100644
  
  bool scan_cpuinfo(hwNode & n)
  {
-@@ -570,6 +582,8 @@ bool scan_cpuinfo(hwNode & n)
+@@ -570,6 +581,8 @@ bool scan_cpuinfo(hwNode & n)
      char buffer[1024];
      size_t count;
      string cpuinfo_str = "";
@@ -362,7 +485,7 @@ index 5a2b8c0..f5665fb 100644
  
      while ((count = read(cpuinfo, buffer, sizeof(buffer))) > 0)
      {
-@@ -595,32 +609,53 @@ bool scan_cpuinfo(hwNode & n)
+@@ -595,32 +608,53 @@ bool scan_cpuinfo(hwNode & n)
          id = hw::strip(cpuinfo_lines[i].substr(0, pos));
          value = hw::strip(cpuinfo_lines[i].substr(pos + 1));
  
@@ -2938,10 +3061,74 @@ index 15a961d..e4d667f 100644
  //scan_mii(fd, interface);
        scan_ip(interface);
 diff --git a/src/core/osutils.cc b/src/core/osutils.cc
-index 95c8483..ff41e18 100644
+index 95c8483..f023a46 100644
 --- a/src/core/osutils.cc
 +++ b/src/core/osutils.cc
-@@ -422,7 +422,7 @@ string dirname(const string & path)
+@@ -21,6 +21,9 @@
+ #ifndef MINOR
+ #include <linux/kdev_t.h>
+ #endif
++#ifdef ZLIB
++#include <zlib.h>
++#endif
+ 
+ __ID("@(#) $Id$");
+ 
+@@ -114,23 +117,49 @@ bool exists(const string & path)
+ }
+ 
+ 
++#ifdef ZLIB
++
++typedef gzFile data_file;
++static data_file file_open(const string & file)
++{
++  data_file result = gzopen((file + ".gz").c_str(), "rb");
++  if (!result)
++  {
++    result = gzopen(file.c_str(), "rb");
++  }
++  return result;
++}
++#define file_open_error(f) ((f) == NULL)
++#define file_read(f, b, l) gzread((f), (b), (l))
++#define file_close(f) gzclose(f)
++
++#else
++
++typedef int data_file;
++#define file_open(f) open((f).c_str(), O_RDONLY);
++#define file_open_error(f) ((f) < 0)
++#define file_read(f, b, l) read((f), (b), (l))
++#define file_close(f) close(f)
++
++#endif
++
+ bool loadfile(const string & file,
+ vector < string > &list)
+ {
+   char buffer[1024];
+   string buffer_str = "";
+   size_t count = 0;
+-  int fd = open(file.c_str(), O_RDONLY);
++  data_file fd = file_open(file);
+ 
+-  if (fd < 0)
++  if (file_open_error(fd))
+     return false;
+ 
+-  while ((count = read(fd, buffer, sizeof(buffer))) > 0)
++  while ((count = file_read(fd, buffer, sizeof(buffer))) > 0)
+     buffer_str += string(buffer, count);
+ 
+   splitlines(buffer_str, list);
+ 
+-  close(fd);
++  file_close(fd);
+ 
+   return true;
+ }
+@@ -422,7 +451,7 @@ string dirname(const string & path)
    path.copy(buffer, len);
    buffer[len] = '\0';
    string result = dirname(buffer);
@@ -2950,7 +3137,7 @@ index 95c8483..ff41e18 100644
    return result;
  }
  
-@@ -773,47 +773,47 @@ string operating_system()
+@@ -773,47 +802,47 @@ string operating_system()
    struct utsname u;
    string os = "";
  
@@ -3019,7 +3206,7 @@ index 95c8483..ff41e18 100644
      os = osinfo[0];
  
    if(uname(&u) != 0) return "";
-@@ -832,15 +832,10 @@ string operating_system()
+@@ -832,15 +861,10 @@ string operating_system()
  
  string platform()
  {
@@ -4527,6 +4714,32 @@ index 0000000..3d70cd6
 +  <url type="homepage">http://www.ezix.org/project/wiki/HardwareLiSter</url>
 +  <update_contact>support@ezix.org</update_contact>
 +</component>
+diff --git a/src/lshw.1 b/src/lshw.1
+index 551fece..43e4eac 100644
+--- a/src/lshw.1
++++ b/src/lshw.1
+@@ -1,5 +1,5 @@
+-.\\" auto-generated by docbook2man-spec $Revision: 1.2 $
+-.TH "LSHW" "1" "30 May 2010" "$Rev: 2179 $" ""
++.\" auto-generated by docbook2man-spec from docbook-utils package
++.TH "LSHW" "1" "28 January 2018" "$Rev$" ""
+ .SH NAME
+ lshw \- list hardware
+ .SH SYNOPSIS
+@@ -98,6 +98,7 @@ partial information.
+ .TP
+ \fB/usr/share/hwdata/pci.ids\fR
+ A list of all known PCI ID's (vendors, devices, classes and subclasses).
++If compiled with zlib support, lshw will look for \fIpci.ids.gz\fR first, then for \fIpci.ids\fR\&.
+ .TP
+ \fB/proc/bus/pci/*\fR
+ Used to access the configuration of installed PCI busses and devices.
+@@ -146,4 +147,4 @@ Don't use DMI to detect hardware.
+ .SH "OTHER INFO"
+ .PP
+ The webpage for \fBlshw\fR is at 
+- <URL:http://lshw.org/>
++ <URL:http://lshw.ezix.org/>
 diff --git a/src/lshw.cc b/src/lshw.cc
 index 77a5932..5fc8ade 100644
 --- a/src/lshw.cc
@@ -4539,6 +4752,18 @@ index 77a5932..5fc8ade 100644
    fprintf(stderr, _("\t-short          output hardware paths\n"));
    fprintf(stderr, _("\t-businfo        output bus information\n"));
    if(getenv("DISPLAY") && exists(SBINDIR"/gtk-lshw"))
+diff --git a/src/lshw.sgml b/src/lshw.sgml
+index e8b0168..2f3a3ac 100644
+--- a/src/lshw.sgml
++++ b/src/lshw.sgml
+@@ -166,6 +166,7 @@ partial information.
+ <term>/usr/share/hwdata/pci.ids</term>
+ <listitem><para>
+ A list of all known PCI ID's (vendors,  devices, classes and subclasses).
++If compiled with zlib support, lshw will look for <filename>pci.ids.gz</filename> first, then for <filename>pci.ids</filename>.
+ </para></listitem></varlistentry>
+ 
+ <varlistentry><term>/proc/bus/pci/*</term>
 diff --git a/src/manuf.txt b/src/manuf.txt
 index a10e77e..7c96681 100644
 --- a/src/manuf.txt

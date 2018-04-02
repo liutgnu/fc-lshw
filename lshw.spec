@@ -1,22 +1,20 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.18
-Release:       15%{?dist}
+Release:       16%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
 Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
-Source1:       lshw-gui.desktop
-Source2:       org.ezix.lshw.gui.policy
-Source3:       lshw-gui
-Source4:       lshw-gui.appdata.xml
 Patch1:        lshw-B.02.18-scandir.patch
-Patch2:        lshw-B.02.18-d05baa7.patch
+Patch2:        lshw-B.02.18-20cda77.patch
 Patch3:        lshw-B.02.18-revert-json.patch
+Patch4:        lshw-B.02.18-cmake.patch
 BuildRequires: desktop-file-utils
 BuildRequires: gettext
 BuildRequires: gtk2-devel >= 2.4
 BuildRequires: libappstream-glib
+BuildRequires: ninja-build
 BuildRequires: python3-devel
 Requires:      hwdata
 %description
@@ -43,58 +41,17 @@ format.
 %patch01 -p1
 %patch02 -p1
 %patch03 -R -p1
+%patch04 -p1
 
 %build
-make %{?_smp_mflags} SBINDIR="%{_sbindir}" RPM_OPT_FLAGS="%{optflags}" gui
-
-# Replace copyrighted icons
-pushd src
-make nologo
+mkdir build && pushd build
+%cmake .. -DNOLOGO=ON -DHWDATA=OFF -DPOLICYKIT=ON -DBUILD_SHARED_LIBS=OFF  -GNinja
+%ninja_build
 
 %install
-make install                   \
-        DESTDIR="%{buildroot}" \
-        PREFIX="%{_prefix}"    \
-        SBINDIR="%{_sbindir}"  \
-        MANDIR="%{_mandir}"    \
-        STRIP="/bin/true"      \
-        INSTALL="install -p"
-
-make install-gui               \
-        DESTDIR="%{buildroot}" \
-        PREFIX="%{_prefix}"    \
-        SBINDIR="%{_sbindir}"  \
-        MANDIR="%{_mandir}"    \
-        STRIP="/bin/true"      \
-        INSTALL="install -p"
-
-mv %{buildroot}%{_sbindir}/gtk-lshw %{buildroot}%{_sbindir}/lshw-gui
-ln -s -f lshw-gui %{buildroot}%{_sbindir}/gtk-lshw
-
-# don't package these copies, use the ones from hwdata instead
-rm -f %{buildroot}%{_datadir}/%{name}/pci.ids
-rm -f %{buildroot}%{_datadir}/%{name}/usb.ids
-# don't package these copies, they're not actually used by the app,
-# and even if they were, should use the hwdata versions
-rm -f %{buildroot}%{_datadir}/%{name}/oui.txt
-rm -f %{buildroot}%{_datadir}/%{name}/manuf.txt
-
-# desktop icon
-install -D -m 0644 -p ./src/gui/artwork/logo.svg \
-     %{buildroot}%{_datadir}/pixmaps/%{name}-gui.svg
-install -D -m 0644 -p ./src/gui/artwork/logo.svg \
-     %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/%{name}-gui.svg
-desktop-file-install %{?vendortag:--vendor fedora} \
-  --dir %{buildroot}%{_datadir}/applications %{SOURCE1}
-
-# PolicyKit
-install -D -m 0644 %{SOURCE2} \
-    %{buildroot}%{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
-install -D -m 0755 %{SOURCE3} %{buildroot}%{_bindir}/lshw-gui
-
-# AppData
-install -D -m 0644 %{SOURCE4} \
-    %{buildroot}%{_datadir}/appdata/lshw-gui.appdata.xml
+pushd build
+%ninja_install
+ln -s gtk-lshw %{buildroot}%{_sbindir}/lshw-gui
 
 # translations seems borken, remove for now
 #find_lang %{name}
@@ -104,6 +61,7 @@ rm -rf %{buildroot}%{_datadir}/locale/fr/
 appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata.xml
 
 # check json output is valid
+pushd build
 src/lshw -json \
     -disable usb -disable pcmcia -disable isapnp \
     -disable ide -disable scsi -disable dmi -disable memory \
@@ -114,21 +72,27 @@ src/lshw -json \
 %license COPYING
 %doc README.md
 %{_mandir}/man1/lshw.1*
-%{_sbindir}/%{name}
+%{_sbindir}/lshw
 
 %files gui
 %license COPYING
-%{_bindir}/%{name}-gui
-%{_sbindir}/gtk-%{name}
-%{_sbindir}/%{name}-gui
-%{_datadir}/%{name}
-%{_datadir}/pixmaps/%{name}-gui.svg
-%{_datadir}/icons/hicolor/scalable/apps/%{name}-gui.svg
-%{_datadir}/applications/%{name}-gui.desktop
-%{_datadir}/appdata/%{name}-gui.appdata.xml
+%{_bindir}/lshw-gui
+%{_sbindir}/gtk-lshw
+%{_sbindir}/lshw-gui
+%dir %{_datadir}/lshw
+%{_datadir}/lshw/artwork
+%dir %{_datadir}/lshw/ui
+%{_datadir}/lshw/ui/gtk-lshw.ui
+%{_datadir}/pixmaps/gtk-lshw.svg
+%{_datadir}/applications/gtk-lshw.desktop
+%{_datadir}/appdata/gtk-lshw.appdata.xml
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Mon Apr 02 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-16
+- Update to commit 20cda77
+- Convert to cmake build system
+
 * Thu Feb 08 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-15
 - Fix JSON issue (rhbz#1543320)
 
