@@ -10,7 +10,10 @@ Patch1:        lshw-B.02.18-scandir.patch
 Patch2:        lshw-B.02.18-20cda77.patch
 Patch3:        lshw-B.02.18-revert-json.patch
 Patch4:        lshw-B.02.18-cmake.patch
+BuildRequires: cmake
 BuildRequires: desktop-file-utils
+BuildRequires: gcc
+BuildRequires: gcc-c++
 BuildRequires: gettext
 BuildRequires: gtk2-devel >= 2.4
 BuildRequires: libappstream-glib
