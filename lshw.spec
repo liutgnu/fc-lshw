@@ -1,7 +1,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.18
-Release:       16%{?dist}
+Release:       17%{?dist}
 License:       GPLv2
 Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
@@ -92,6 +92,9 @@ src/lshw -json \
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Tue Jun 19 2018 Miro Hrončok <mhroncok@redhat.com> - B.02.18-17
+- Rebuilt for Python 3.7
+
 * Mon Apr 02 2018 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-16
 - Update to commit 20cda77
 - Convert to cmake build system
