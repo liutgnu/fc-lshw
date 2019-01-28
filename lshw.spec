@@ -3,7 +3,6 @@ Name:          lshw
 Version:       B.02.18
 Release:       18%{?dist}
 License:       GPLv2
-Group:         Applications/System
 URL:           http://ezix.org/project/wiki/HardwareLiSter
 Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
 Patch1:        lshw-B.02.18-scandir.patch
@@ -31,7 +30,6 @@ Information can be output in plain text, XML or HTML.
 
 %package       gui
 Summary:       Graphical hardware lister
-Group:         Applications/System
 Requires:      polkit
 Requires:      %{name} = %{version}-%{release}
 %description   gui
