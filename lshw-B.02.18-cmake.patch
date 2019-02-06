@@ -351,7 +351,7 @@ index 0000000..ab559d9
 +  set_target_properties(lshw PROPERTIES LINK_FLAGS "-static" )
 +endif()
 +
-+target_link_libraries(lshw ${SQLITE3_LIBRARIES} ${Z_LIBRARIES} resolv core)
++target_link_libraries(lshw ${SQLITE3_LIBRARIES} ${Z_LIBRARIES} core resolv)
 +
 +if(NOT ZLIB)
 +  if(HWDATA)
@@ -719,7 +719,7 @@ index 0000000..48bd3f5
 +include_directories("${GTK2_INCLUDE_DIRS}")
 +
 +add_executable(gtk-lshw ${GTK_SOURCES})
-+target_link_libraries(gtk-lshw ${SQLITE3_LIBRARIES} ${Z_LIBRARIES} ${GTK2_LIBRARIES} resolv core)
++target_link_libraries(gtk-lshw ${SQLITE3_LIBRARIES} ${Z_LIBRARIES} ${GTK2_LIBRARIES} core resolv)
 +install(TARGETS gtk-lshw DESTINATION sbin)
 +
 +if(POLICYKIT)
