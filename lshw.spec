@@ -1,10 +1,11 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.18
-Release:       19%{?dist}
+Release:       20%{?dist}
 License:       GPLv2
 URL:           http://ezix.org/project/wiki/HardwareLiSter
 Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
+Source1:       https://salsa.debian.org/openstack-team/third-party/lshw/raw/debian/stein/debian/patches/lshw-gtk.1
 Patch1:        lshw-B.02.18-scandir.patch
 Patch2:        lshw-B.02.18-20cda77.patch
 Patch3:        lshw-B.02.18-revert-json.patch
@@ -52,6 +53,7 @@ mkdir build && pushd build
 %install
 pushd build
 %ninja_install
+install -m0644 -D %{SOURCE1} %{buildroot}%{_mandir}/man1/lshw-gui.1
 ln -s gtk-lshw %{buildroot}%{_sbindir}/lshw-gui
 
 # translations seems borken, remove for now
@@ -80,6 +82,7 @@ src/lshw -json \
 %{_bindir}/lshw-gui
 %{_sbindir}/gtk-lshw
 %{_sbindir}/lshw-gui
+%{_mandir}/man1/lshw-gui.1*
 %dir %{_datadir}/lshw
 %{_datadir}/lshw/artwork
 %dir %{_datadir}/lshw/ui
@@ -90,6 +93,9 @@ src/lshw -json \
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Sat May 25 2019 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-20
+- Add lshw-gui man page (from Debian, thanks!)
+
 * Fri Feb 01 2019 Fedora Release Engineering <releng@fedoraproject.org> - B.02.18-19
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
 
