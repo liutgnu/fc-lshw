@@ -1,0 +1,303 @@
+From 16e1d7b9e9a1aa69a59867de0aad6411c953fbfc Mon Sep 17 00:00:00 2001
+From: Harry Mallon <harry.mallon@codex.online>
+Date: Mon, 25 Mar 2019 19:44:14 +0000
+Subject: [PATCH] add support for /dev/nvmeX NVMe controllers
+
+* Added nvme scanning for controllers /dev/nvme[0-9]+
+* Added nvme scanning for namespaces /dev/nvme[0-9]+n[0-9]+
+* Fill in namespaces as disks
+* Teach partition scanning about nvme partitions /dev/nvme[0-9]+n[0-9]+p[0-9]+
+---
+ src/core/main.cc       |   4 ++
+ src/core/nvme.cc       | 156 +++++++++++++++++++++++++++++++++++++++++
+ src/core/nvme.h        |   7 ++
+ src/core/partitions.cc |  17 +++--
+ src/core/sysfs.cc      |  15 ++++
+ src/core/sysfs.h       |   3 +
+ 7 files changed, 199 insertions(+), 8 deletions(-)
+ create mode 100644 src/core/nvme.cc
+ create mode 100644 src/core/nvme.h
+
+diff --git a/src/core/main.cc b/src/core/main.cc
+index c9a6e44..1dd109c 100644
+--- a/src/core/main.cc
++++ b/src/core/main.cc
+@@ -29,6 +29,7 @@
+ #include "pcmcia-legacy.h"
+ #include "ide.h"
+ #include "scsi.h"
++#include "nvme.h"
+ #include "spd.h"
+ #include "network.h"
+ #include "isapnp.h"
+@@ -132,6 +133,9 @@ bool scan_system(hwNode & system)
+     status("SCSI");
+     if (enabled("scsi"))
+       scan_scsi(computer);
++    status("NVMe");
++    if (enabled("nvme"))
++      scan_nvme(computer);
+     status("S/390 devices");
+     if (enabled("s390"))
+       scan_s390_devices(computer);
+diff --git a/src/core/nvme.cc b/src/core/nvme.cc
+new file mode 100644
+index 0000000..872d221
+--- /dev/null
++++ b/src/core/nvme.cc
+@@ -0,0 +1,156 @@
++#include "version.h"
++#include "disk.h"
++#include "osutils.h"
++#include "sysfs.h"
++#include "hw.h"
++#include <glob.h>
++#include <libgen.h>
++
++#include <string>
++
++__ID("@(#) $Id$");
++
++#define CLASS_NVME "nvme"
++#define NVMEX "/dev/nvme[0-9]*"
++#define NVMEXNX "/dev/nvme[0-9]*n[0-9]*"
++
++static void scan_controllers(hwNode & n)
++{
++  glob_t entries;
++  size_t j;
++
++  if(glob(NVMEX, 0, NULL, &entries) == 0)
++  {
++    for(j=0; j < entries.gl_pathc; j++)
++    {
++      if(matches(entries.gl_pathv[j], "^/dev/nvme[[:digit:]]+$"))
++      {
++        string businfo = "";
++        string logicalname = "";
++        hwNode *device = NULL;
++
++        logicalname = basename(entries.gl_pathv[j]);
++        if (logicalname.empty())
++          continue;
++
++        businfo = sysfs::entry::byClass(CLASS_NVME, logicalname).businfo();
++
++        if (!businfo.empty())
++          device = n.findChildByBusInfo(businfo);
++
++        if (!device)
++          device = n.findChildByLogicalName(logicalname);
++
++        if (!device)
++        {
++          hwNode *core = n.getChild("core");
++
++          if (core)
++            device = n.getChild("nvme");
++
++          if (core && !device)
++            device = core->addChild(hwNode("nvme", hw::storage));
++        }
++
++        if (!device)
++          device = n.addChild(hwNode("nvme", hw::storage));
++
++        if (device)
++        {
++          if(device->getBusInfo().empty())
++            device->setBusInfo(businfo);
++          device->setLogicalName(logicalname);
++          device->claim();
++        }
++      }
++    }
++
++    globfree(&entries);
++  }
++}
++
++static void scan_namespaces(hwNode & n)
++{
++  glob_t entries;
++  size_t j;
++
++  if(glob(NVMEXNX, 0, NULL, &entries) == 0)
++  {
++    for(j=0; j < entries.gl_pathc; j++)
++    {
++      if(matches(entries.gl_pathv[j], "^/dev/nvme[[:digit:]]+n[[:digit:]]+$"))
++      {
++        // We get this information from sysfs rather than doing an NVMe Identify command
++        // so they may not all be available from all kernels.
++        string path = entries.gl_pathv[j];
++        string logicalname = "";
++        string parentlogicalname = "";
++        string model;
++        string serial;
++        string firmware_rev;
++        hwNode *parent = NULL;
++        hwNode device = hwNode("disk", hw::disk);
++
++        logicalname = basename(entries.gl_pathv[j]);
++        if (logicalname.empty())
++          continue;
++
++        parentlogicalname = path.substr(0, path.find_last_of("n"));
++
++        sysfs::entry e = sysfs::entry::byClass("block", logicalname);
++
++        model = e.model();
++        serial = e.serial();
++        firmware_rev = e.firmware_rev();
++
++        device.setDescription("NVMe disk");
++        device.setLogicalName(logicalname);
++        device.claim();
++
++        if (!model.empty())
++          device.setProduct(model);
++        if (!serial.empty())
++          device.setSerial(serial);
++        if (!firmware_rev.empty())
++          device.setVersion(firmware_rev);
++
++        scan_disk(device);
++
++        if (!parentlogicalname.empty())
++          parent = n.findChildByLogicalName(parentlogicalname);
++
++        if (!parent)
++        {
++          hwNode *core = n.getChild("core");
++
++          if (core)
++            parent = n.getChild("nvme");
++
++          if (core && !parent)
++            parent = core->addChild(hwNode("nvme", hw::storage));
++        }
++
++        if (!parent)
++          parent = n.addChild(hwNode("nvme", hw::storage));
++
++        if (parent)
++        {
++          parent->addChild(device);
++          parent->claim();
++        }
++      }
++    }
++
++    globfree(&entries);
++  }
++
++}
++
++bool scan_nvme(hwNode & n)
++{
++  scan_controllers(n);
++
++  scan_namespaces(n);
++
++  return false;
++}
+diff --git a/src/core/nvme.h b/src/core/nvme.h
+new file mode 100644
+index 0000000..0b89acd
+--- /dev/null
++++ b/src/core/nvme.h
+@@ -0,0 +1,7 @@
++#ifndef _NVME_H_
++#define _NVME_H_
++
++#include "hw.h"
++
++bool scan_nvme(hwNode & n);
++#endif
+diff --git a/src/core/partitions.cc b/src/core/partitions.cc
+index 5682ee5..88a7188 100644
+--- a/src/core/partitions.cc
++++ b/src/core/partitions.cc
+@@ -295,6 +295,7 @@ static bool guess_logicalname(source & s, const hwNode & disk, unsigned int n, h
+   struct stat buf;
+   char name[10];
+   int dev = 0;
++  string devname;
+ 
+   snprintf(name, sizeof(name), "%d", n);
+   if(disk.getBusInfo()!="")
+@@ -304,9 +305,16 @@ static bool guess_logicalname(source & s, const hwNode & disk, unsigned int n, h
+   if(!S_ISBLK(buf.st_mode)) return false;
+ 
+   if(s.diskname!="")
+-    dev = open_dev(buf.st_rdev + n, S_IFBLK, s.diskname+string(name));
++    devname = s.diskname;
+   else
+-    dev = open_dev(buf.st_rdev + n, S_IFBLK, disk.getLogicalName()+string(name));
++    devname = disk.getLogicalName();
++
++  // NVMe partitions are like /dev/nvme0n1p2
++  if(matches(devname, "^/dev/nvme[[:digit:]]+n[[:digit:]]+$"))
++    devname += "p";
++  devname += string(name);
++
++  dev = open_dev(buf.st_rdev + n, S_IFBLK, devname);
+ 
+   if(dev>=0)
+   {
+@@ -330,10 +338,7 @@ static bool guess_logicalname(source & s, const hwNode & disk, unsigned int n, h
+     if(memcmp(buffer1, buffer2, BLOCKSIZE)==0)
+     {
+       partition.claim();
+-      if(s.diskname!="")
+-        partition.setLogicalName(s.diskname+string(name));
+-      else
+-        partition.setLogicalName(disk.getLogicalName()+string(name));
++      partition.setLogicalName(devname);
+       return true;
+     }
+   }
+diff --git a/src/core/sysfs.cc b/src/core/sysfs.cc
+index 06bce8e..d6b7511 100644
+--- a/src/core/sysfs.cc
++++ b/src/core/sysfs.cc
+@@ -368,6 +368,21 @@ string entry::vendor() const
+   return get_string(This->devpath+"/vendor");
+ }
+ 
++string entry::model() const
++{
++  return get_string(This->devpath+"/model");
++}
++
++string entry::serial() const
++{
++  return get_string(This->devpath+"/serial");
++}
++
++string entry::firmware_rev() const
++{
++  return get_string(This->devpath+"/firmware_rev");
++}
++
+ vector < entry > sysfs::entries_by_bus(const string & busname)
+ {
+   vector < entry > result;
+diff --git a/src/core/sysfs.h b/src/core/sysfs.h
+index 5f28d0c..d814c47 100644
+--- a/src/core/sysfs.h
++++ b/src/core/sysfs.h
+@@ -28,6 +28,9 @@ namespace sysfs
+       string modalias() const;
+       string device() const;
+       string vendor() const;
++      string model() const;
++      string serial() const;
++      string firmware_rev() const;
+       entry parent() const;
+       string name_in_class(const string &) const;
+       string string_attr(const string & name, const string & def = "") const;
+-- 
+2.21.0
+

@@ -1,29 +1,29 @@
-From a43ffe12212e1a4dd7b0038197b53798d7a3dfb1 Mon Sep 17 00:00:00 2001
+From c8a08ccb9a268c4d55bf80a236cd0ad2d149ce20 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Terje=20R=C3=B8sten?= <terje.rosten@ntnu.no>
-Date: Mon, 2 Apr 2018 14:51:55 +0200
+Date: Tue, 28 May 2019 19:32:24 +0200
 Subject: [PATCH] cmakeify
 
 ---
- CMakeLists.txt                                     |  42 ++++++
- Makefile                                           |  20 ---
- README.md                                          |  47 ++++---
- lshw.spec.in                                       |  52 ++------
- src/CMakeLists.txt                                 | 103 +++++++++++++++
- src/Makefile                                       | 144 ---------------------
- src/core/Makefile                                  |  80 ------------
- src/core/{config.h => config.h.in}                 |  28 ++--
- src/core/db.cc                                     |   8 ++
- src/core/dump.cc                                   |   2 +-
- src/core/version.h                                 |   2 +
- src/gui/CMakeLists.txt                             |  67 ++++++++++
- src/gui/Makefile                                   |  61 ---------
- .../{gtk-lshw.desktop => gtk-lshw.desktop.in}      |   7 +-
- src/gui/integration/lshw-gui.in                    |   5 +
- src/gui/integration/org.ezix.lshw.gui.policy.in    |  20 +++
- src/gui/stock.c                                    |   1 +
- src/po/CMakeLists.txt                              |  16 +++
- src/po/Makefile                                    |  23 ----
- 19 files changed, 317 insertions(+), 411 deletions(-)
+ CMakeLists.txt                                |  43 ++++++
+ Makefile                                      |  20 ---
+ README.md                                     |  51 ++++---
+ lshw.spec.in                                  |  62 +++-----
+ src/CMakeLists.txt                            | 102 +++++++++++++
+ src/Makefile                                  | 144 ------------------
+ src/core/Makefile                             |  80 ----------
+ src/core/{config.h => config.h.in}            |  28 +---
+ src/core/db.cc                                |   8 +
+ src/core/dump.cc                              |   2 +-
+ src/core/version.h                            |   2 +
+ src/gui/CMakeLists.txt                        |  67 ++++++++
+ src/gui/Makefile                              |  61 --------
+ .../{gtk-lshw.desktop => gtk-lshw.desktop.in} |   7 +-
+ src/gui/integration/lshw-gui.in               |   5 +
+ .../integration/org.ezix.lshw.gui.policy.in   |  20 +++
+ src/gui/stock.c                               |   1 +
+ src/po/CMakeLists.txt                         |  16 ++
+ src/po/Makefile                               |  23 ---
+ 19 files changed, 327 insertions(+), 415 deletions(-)
  create mode 100644 CMakeLists.txt
  delete mode 100644 Makefile
  create mode 100644 src/CMakeLists.txt
@@ -40,17 +40,18 @@ Subject: [PATCH] cmakeify
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 new file mode 100644
-index 0000000..6c69c37
+index 0000000..d14a65c
 --- /dev/null
 +++ b/CMakeLists.txt
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,43 @@
 +cmake_minimum_required(VERSION 3.0)
 +
 +project(lshw)
-+set(VERSION "B.012.18")
++set(VERSION "B.02.18")
 +
-+IF(EXISTS "${PROJECT_SOURCE_DIR}/.git")
-+  find_package(Git)
++find_package(Git)
++
++if(EXISTS "${PROJECT_SOURCE_DIR}/.git" AND "${MAKE_RELEASE}" STREQUAL "")
 +  if(GIT_FOUND)
 +    execute_process(
 +      COMMAND ${GIT_EXECUTABLE} describe --tags
@@ -113,10 +114,10 @@ index 8fe665e..0000000
 -	tar --transform s!^!$(PACKAGENAME)-$(VERSION)/! -rf $(PACKAGENAME)-$(VERSION).tar $^
 -	gzip -f $(PACKAGENAME)-$(VERSION).tar
 diff --git a/README.md b/README.md
-index 7afcae6..393da0f 100644
+index 30feaf1..294888c 100644
 --- a/README.md
 +++ b/README.md
-@@ -15,27 +15,25 @@ Installation
+@@ -15,27 +15,29 @@ Installation
   1. Requirements
     - Linux 2.4.x, 2.6.x, 3.x or 4.x (2.2.x might work, though)
     - a PA-RISC-, Alpha-, IA-64- (Itanium-), PowerPC-, ARM- or x86- based machine
@@ -128,13 +129,17 @@ index 7afcae6..393da0f 100644
 +   - for optional zlib feature install zlib and gzip
  
 - 2. To compile it, just use:
-+ 2. Use cmake options to adjust non default set:
-+     -DGUI=OFF, -DZLIB=ON, -DSQLITE=ON and/or -DNOLOGO=ON
++ 2. Use cmake options to decide feature set:
++   - -DGUI=OFF - disable graphical user interface version og lshw
++   - -DZLIB=ON - enable reading of gzipped datafiles
++   - -DSQLITE=ON -  enable SQLite support
++   - -DPOLICYKIT=ON - enable PolicyKit integration
++   - -DNOLOGO=ON - don't install logos with copyright
  
 -    	$ make
 + 3. Do configuration and build by
  
--    To complile with zlib support (see below), use:
+-    To compile with zlib support (see below), use:
 -
 -    	$ make ZLIB=1
 -
@@ -154,7 +159,7 @@ index 7afcae6..393da0f 100644
  
  Getting help
  ------------
-@@ -61,12 +59,27 @@ If compiled with zlib support, lshw will look for `file`.gz first, then for `fil
+@@ -61,12 +63,27 @@ If compiled with zlib support, lshw will look for `file`.gz first, then for `fil
  
  Statically-linked and/or compressed binaries can be built by using
  
@@ -172,8 +177,8 @@ index 7afcae6..393da0f 100644
 +Building compressed binaries requires `upx` (cf. https://upx.github.io/).
  
 -in the `src/` directory
-+Release and maintenance
-+-----------------------
++Release management and data files maintenance
++---------------------------------------------
  
 -Building compressed binaries requires `upx` (cf. https://upx.github.io/).
 +Create release tarball,
@@ -181,17 +186,40 @@ index 7afcae6..393da0f 100644
 + 1. Edit CMakeLists.txt to set version
 + 2. Run
 +    $ mkdir build && cd build
-+    $ cmake .. -GNinja
-+    $ ninja release
++    $ cmake .. -DMAKE_RELEASE=ON
++    $ make release
 +
 +Update hwdata files:
 +
-+    $ ninja refresh_hwdata
++    $ make refresh_hwdata
 diff --git a/lshw.spec.in b/lshw.spec.in
-index c597379..a7655f5 100644
+index f7f88b3..3fe23c2 100644
 --- a/lshw.spec.in
 +++ b/lshw.spec.in
-@@ -52,49 +52,17 @@ http://lshw.ezix.org/
+@@ -7,9 +7,11 @@ Version: @VERSION@
+ Release: 2
+ Source: http://www.ezix.org/software/files/%{name}-%{version}.tar.gz
+ URL: http://lshw.ezix.org/
+-License: GPL
++License: GPLv2
+ Group: Applications/System
+-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
++BuildRequires: gcc
++BuildRequires: gcc-c++
++BuildRequires: cmake
+ 
+ %description
+ lshw (Hardware Lister) is a small tool to provide detailed information on
+@@ -37,7 +39,7 @@ lshw (Hardware Lister) is a small tool to provide detailed informaton on
+ the hardware configuration of the machine. It can report exact memory
+ configuration, firmware version, mainboard configuration, CPU version
+ and speed, cache configuration, bus speed, etc. on DMI-capable x86s
+- systems and on some PowerPC machines (PowerMac G4 is known to work).
++systems and on some PowerPC machines (PowerMac G4 is known to work).
+ 
+ This package provides a graphical user interface to display hardware
+ information.
+@@ -52,59 +54,29 @@ http://lshw.ezix.org/
  %setup -q
  
  %build
@@ -244,11 +272,12 @@ index c597379..a7655f5 100644
 -%defattr(-,root,root, 0555)
 -%doc README.md COPYING docs/TODO docs/Changelog docs/lshw.xsd
 +%license COPYING
-+%doc COPYING docs/TODO docs/Changelog docs/lshw.xsd
++%doc docs/TODO docs/Changelog docs/lshw.xsd
  %{_sbindir}/lshw
- %doc %{_mandir}/man?/*
+-%doc %{_mandir}/man?/*
++%{_mandir}/man?/*
  %{_datadir}/lshw/
-@@ -102,9 +70,11 @@ http://lshw.ezix.org/
+ %{_datadir}/locale/*/*/*
  
  %if %{!?_without_gui:1}0
  %files gui
@@ -264,10 +293,10 @@ index c597379..a7655f5 100644
  %changelog
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
 new file mode 100644
-index 0000000..ab559d9
+index 0000000..8b97a16
 --- /dev/null
 +++ b/src/CMakeLists.txt
-@@ -0,0 +1,103 @@
+@@ -0,0 +1,102 @@
 +if(STATIC)
 + set(ZLIB OFF)
 + set(SQLITE OFF)
@@ -370,10 +399,9 @@ index 0000000..ab559d9
 +
 +install(FILES lshw.1 DESTINATION ${MANDIR}/man1 COMPONENT doc)
 +install(TARGETS lshw DESTINATION sbin)
-+
 diff --git a/src/Makefile b/src/Makefile
 deleted file mode 100644
-index 917bf6b..0000000
+index 7ae8218..0000000
 --- a/src/Makefile
 +++ /dev/null
 @@ -1,144 +0,0 @@
@@ -399,7 +427,7 @@ index 917bf6b..0000000
 -export SQLITE
 -export ZLIB
 -
--CXX?=c++
+-CXX?=$(CROSS_COMPILE)c++
 -INCLUDES=-I./core/
 -DEFINES=-DPREFIX=\"$(PREFIX)\" -DSBINDIR=\"$(SBINDIR)\" -DMANDIR=\"$(MANDIR)\" -DDATADIR=\"$(DATADIR)\" -DVERSION=\"$(VERSION)\"
 -CXXFLAGS=-g -Wall -g $(INCLUDES) $(DEFINES) $(RPM_OPT_FLAGS)
@@ -409,7 +437,7 @@ index 917bf6b..0000000
 -ifeq ($(ZLIB), 1)
 -	CXXFLAGS+= -DZLIB $(shell pkg-config --cflags zlib)
 -endif
--LDFLAGS=-L./core/ -g
+-LDFLAGS+=-L./core/ -g
 -ifneq ($(shell $(LD) --help 2| grep -- --as-needed), )
 -	LDFLAGS+= -Wl,--as-needed
 -endif
@@ -523,13 +551,13 @@ index 917bf6b..0000000
 -# DO NOT DELETE
 diff --git a/src/core/Makefile b/src/core/Makefile
 deleted file mode 100644
-index 884a963..0000000
+index fbf6027..0000000
 --- a/src/core/Makefile
 +++ /dev/null
 @@ -1,80 +0,0 @@
 -PACKAGENAME?=lshw
 -
--CXX=c++
+-CXX?=$(CROSS_COMPILE)c++
 -INCLUDES=
 -DEFINES=-DPREFIX=\"$(PREFIX)\" -DSBINDIR=\"$(SBINDIR)\" -DMANDIR=\"$(MANDIR)\" -DDATADIR=\"$(DATADIR)\"
 -CXXFLAGS?=-g -Wall $(INCLUDES) $(DEFINES) $(RPM_OPT_FLAGS)
@@ -699,7 +727,7 @@ index 91e039a..5cecdda 100644
  #else
 diff --git a/src/gui/CMakeLists.txt b/src/gui/CMakeLists.txt
 new file mode 100644
-index 0000000..48bd3f5
+index 0000000..3489053
 --- /dev/null
 +++ b/src/gui/CMakeLists.txt
 @@ -0,0 +1,67 @@
@@ -756,7 +784,7 @@ index 0000000..48bd3f5
 +
 +install(FILES ${LOGOS} DESTINATION ${PROJECT_DATADIR}/artwork)
 +install(FILES gtk-lshw.ui DESTINATION ${PROJECT_DATADIR}/ui)
-+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gtk-lshw.desktop 
++install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gtk-lshw.desktop
 +  DESTINATION ${CMAKE_INSTALL_FULL_DATADIR}/applications)
 +install(FILES integration/gtk-lshw.appdata.xml DESTINATION
 +  ${CMAKE_INSTALL_FULL_DATADIR}/appdata)
@@ -772,14 +800,14 @@ index 0000000..48bd3f5
 +endif()
 diff --git a/src/gui/Makefile b/src/gui/Makefile
 deleted file mode 100644
-index 2526c18..0000000
+index 74be693..0000000
 --- a/src/gui/Makefile
 +++ /dev/null
 @@ -1,61 +0,0 @@
 -PACKAGENAME?=lshw
 -
--CXX?=c++
--CC?=cc
+-CXX?=$(CROSS_COMPILE)c++
+-CC?=$(CROSS_COMPILE)cc
 -STRIP?=strip
 -OBJCOPY?=objcopy
 -
@@ -956,5 +984,5 @@ index 36fbdb7..0000000
 -clean:
 -	rm -f $(CATALOGS) $(PACKAGENAME).pot
 -- 
-2.13.6
+2.21.0
 

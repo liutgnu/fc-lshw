@@ -1,15 +1,16 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.18
-Release:       20%{?dist}
+Release:       21%{?dist}
 License:       GPLv2
 URL:           http://ezix.org/project/wiki/HardwareLiSter
 Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
 Source1:       https://salsa.debian.org/openstack-team/third-party/lshw/raw/debian/stein/debian/patches/lshw-gtk.1
 Patch1:        lshw-B.02.18-scandir.patch
-Patch2:        lshw-B.02.18-20cda77.patch
+Patch2:        lshw-B.02.18-6cc0581.patch
 Patch3:        lshw-B.02.18-revert-json.patch
 Patch4:        lshw-B.02.18-cmake.patch
+Patch5:        lshw-B.02.18-nvme.patch
 BuildRequires: cmake
 BuildRequires: desktop-file-utils
 BuildRequires: gcc
@@ -44,6 +45,7 @@ format.
 %patch02 -p1
 %patch03 -R -p1
 %patch04 -p1
+%patch05 -p1
 
 %build
 mkdir build && pushd build
@@ -93,6 +95,11 @@ src/lshw -json \
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Tue May 28 2019 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-21
+- Update to commit 6cc0581
+- Rebase cmake patch on top 6cc0581
+- Add NVME patch from PR#45
+
 * Sat May 25 2019 Terje Rosten <terje.rosten@ntnu.no> - B.02.18-20
 - Add lshw-gui man page (from Debian, thanks!)
 
