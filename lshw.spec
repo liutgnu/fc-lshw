@@ -1,16 +1,14 @@
 Summary:       Hardware lister
 Name:          lshw
-Version:       B.02.18
-Release:       23%{?dist}
+Version:       B.02.19.2
+Release:       1%{?dist}
 License:       GPLv2
 URL:           http://ezix.org/project/wiki/HardwareLiSter
 Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
 Source1:       https://salsa.debian.org/openstack-team/third-party/lshw/raw/debian/stein/debian/patches/lshw-gtk.1
 Patch1:        lshw-B.02.18-scandir.patch
-Patch2:        lshw-B.02.18-6cc0581.patch
 Patch3:        lshw-B.02.18-revert-json.patch
-Patch4:        lshw-B.02.18-cmake.patch
-Patch5:        lshw-B.02.18-nvme.patch
+Patch4:        lshw-B.02.19.2-cmake.patch
 BuildRequires: cmake
 BuildRequires: desktop-file-utils
 BuildRequires: gcc
@@ -42,10 +40,8 @@ format.
 %prep
 %setup -q
 %patch01 -p1
-%patch02 -p1
 %patch03 -R -p1
 %patch04 -p1
-%patch05 -p1
 
 %build
 mkdir build && pushd build
@@ -95,6 +91,9 @@ src/lshw -json \
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Tue Mar 24 2020 Terje Rosten <terje.rosten@ntnu.no> - B.02.19.2-1
+- B.02.19.2
+
 * Wed Jan 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - B.02.18-23
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 

@@ -1,13 +1,13 @@
-From c8a08ccb9a268c4d55bf80a236cd0ad2d149ce20 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Terje=20R=C3=B8sten?= <terje.rosten@ntnu.no>
-Date: Tue, 28 May 2019 19:32:24 +0200
+From 5da5b63bd38634834bb3e631a24e31a10ab60f27 Mon Sep 17 00:00:00 2001
+From: Terje Rosten <terje.rosten@ntnu.no>
+Date: Wed, 25 Mar 2020 21:57:53 +0100
 Subject: [PATCH] cmakeify
 
 ---
  CMakeLists.txt                                |  43 ++++++
  Makefile                                      |  20 ---
  README.md                                     |  51 ++++---
- lshw.spec.in                                  |  62 +++-----
+ lshw.spec.in                                  |  66 +++-----
  src/CMakeLists.txt                            | 102 +++++++++++++
  src/Makefile                                  | 144 ------------------
  src/core/Makefile                             |  80 ----------
@@ -23,7 +23,7 @@ Subject: [PATCH] cmakeify
  src/gui/stock.c                               |   1 +
  src/po/CMakeLists.txt                         |  16 ++
  src/po/Makefile                               |  23 ---
- 19 files changed, 327 insertions(+), 415 deletions(-)
+ 19 files changed, 327 insertions(+), 419 deletions(-)
  create mode 100644 CMakeLists.txt
  delete mode 100644 Makefile
  create mode 100644 src/CMakeLists.txt
@@ -40,14 +40,14 @@ Subject: [PATCH] cmakeify
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 new file mode 100644
-index 0000000..d14a65c
+index 0000000..3b1d4d6
 --- /dev/null
 +++ b/CMakeLists.txt
 @@ -0,0 +1,43 @@
 +cmake_minimum_required(VERSION 3.0)
 +
 +project(lshw)
-+set(VERSION "B.02.18")
++set(VERSION "B.02.19.2")
 +
 +find_package(Git)
 +
@@ -193,10 +193,10 @@ index 30feaf1..294888c 100644
 +
 +    $ make refresh_hwdata
 diff --git a/lshw.spec.in b/lshw.spec.in
-index f7f88b3..3fe23c2 100644
+index e837fd4..3fe23c2 100644
 --- a/lshw.spec.in
 +++ b/lshw.spec.in
-@@ -7,9 +7,11 @@ Version: @VERSION@
+@@ -7,11 +7,11 @@ Version: @VERSION@
  Release: 2
  Source: http://www.ezix.org/software/files/%{name}-%{version}.tar.gz
  URL: http://lshw.ezix.org/
@@ -204,13 +204,15 @@ index f7f88b3..3fe23c2 100644
 +License: GPLv2
  Group: Applications/System
 -BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+-
+-%global debug_package %{nil}
 +BuildRequires: gcc
 +BuildRequires: gcc-c++
 +BuildRequires: cmake
  
  %description
  lshw (Hardware Lister) is a small tool to provide detailed information on
-@@ -37,7 +39,7 @@ lshw (Hardware Lister) is a small tool to provide detailed informaton on
+@@ -39,7 +39,7 @@ lshw (Hardware Lister) is a small tool to provide detailed informaton on
  the hardware configuration of the machine. It can report exact memory
  configuration, firmware version, mainboard configuration, CPU version
  and speed, cache configuration, bus speed, etc. on DMI-capable x86s
@@ -219,7 +221,7 @@ index f7f88b3..3fe23c2 100644
  
  This package provides a graphical user interface to display hardware
  information.
-@@ -52,59 +54,29 @@ http://lshw.ezix.org/
+@@ -54,61 +54,29 @@ http://lshw.ezix.org/
  %setup -q
  
  %build
@@ -228,6 +230,7 @@ index f7f88b3..3fe23c2 100644
 -  SBINDIR="%{_sbindir}" \
 -  MANDIR="%{_mandir}" \
 -  DATADIR="%{_datadir}" \
+-  VERSION="%{version}" \
 -  all
 -%if %{!?_without_gui:1}0
 -%{__make} %{?_smp_mflags} \
@@ -235,6 +238,7 @@ index f7f88b3..3fe23c2 100644
 -  SBINDIR="%{_sbindir}" \
 -  MANDIR="%{_mandir}" \
 -  DATADIR="%{_datadir}" \
+-  VERSION="%{version}" \
 -  gui
 -%endif
 +mkdir build && cd build
@@ -551,7 +555,7 @@ index 7ae8218..0000000
 -# DO NOT DELETE
 diff --git a/src/core/Makefile b/src/core/Makefile
 deleted file mode 100644
-index fbf6027..0000000
+index b429380..0000000
 --- a/src/core/Makefile
 +++ /dev/null
 @@ -1,80 +0,0 @@
@@ -565,7 +569,7 @@ index fbf6027..0000000
 -LDSTATIC=
 -LIBS=
 -
--OBJS = hw.o main.o print.o mem.o dmi.o device-tree.o cpuinfo.o osutils.o pci.o version.o cpuid.o ide.o cdrom.o pcmcia-legacy.o scsi.o s390.o disk.o spd.o network.o isapnp.o pnp.o fb.o options.o usb.o sysfs.o display.o heuristics.o parisc.o cpufreq.o partitions.o blockio.o lvm.o ideraid.o pcmcia.o volumes.o mounts.o smp.o abi.o jedec.o dump.o fat.o virtio.o vio.o
+-OBJS = hw.o main.o print.o mem.o dmi.o device-tree.o cpuinfo.o osutils.o pci.o version.o cpuid.o ide.o cdrom.o pcmcia-legacy.o scsi.o s390.o disk.o spd.o network.o isapnp.o pnp.o fb.o options.o usb.o sysfs.o display.o heuristics.o parisc.o cpufreq.o partitions.o blockio.o lvm.o ideraid.o pcmcia.o volumes.o mounts.o smp.o abi.o jedec.o dump.o fat.o virtio.o vio.o nvme.o mmc.o
 -ifeq ($(SQLITE), 1)
 -	OBJS+= db.o
 -endif
@@ -800,7 +804,7 @@ index 0000000..3489053
 +endif()
 diff --git a/src/gui/Makefile b/src/gui/Makefile
 deleted file mode 100644
-index 74be693..0000000
+index f003cfb..0000000
 --- a/src/gui/Makefile
 +++ /dev/null
 @@ -1,61 +0,0 @@
@@ -818,7 +822,7 @@ index 74be693..0000000
 -ifeq ($(SQLITE), 1)
 -	CXXFLAGS+= -DSQLITE $(shell pkg-config --cflags sqlite3)
 -endif
--CFLAGS=$(CXXFLAGS) $(DEFINES)
+-CFLAGS=$(CXXFLAGS) -g $(DEFINES)
 -GTKLIBS=$(shell pkg-config gtk+-2.0 gmodule-2.0 --libs)
 -LIBS+=-L../core -llshw -lresolv $(GTKLIBS)
 -ifeq ($(SQLITE), 1)
@@ -984,5 +988,5 @@ index 36fbdb7..0000000
 -clean:
 -	rm -f $(CATALOGS) $(PACKAGENAME).pot
 -- 
-2.21.0
+2.25.1
 
