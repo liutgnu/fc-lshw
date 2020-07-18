@@ -1,3 +1,4 @@
+%undefine __cmake_in_source_build
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.19.2
@@ -48,13 +49,11 @@ format.
 %patch06 -p1
 
 %build
-mkdir build && pushd build
-%cmake .. -DNOLOGO=ON -DHWDATA=OFF -DPOLICYKIT=ON -DBUILD_SHARED_LIBS=OFF  -GNinja
-%ninja_build
+%cmake -DNOLOGO=ON -DHWDATA=OFF -DPOLICYKIT=ON -DBUILD_SHARED_LIBS=OFF  -GNinja
+%cmake_build
 
 %install
-pushd build
-%ninja_install
+%cmake_install
 install -m0644 -D %{SOURCE1} %{buildroot}%{_mandir}/man1/lshw-gui.1
 ln -s gtk-lshw %{buildroot}%{_sbindir}/lshw-gui
 
@@ -66,8 +65,7 @@ rm -rf %{buildroot}%{_datadir}/locale/fr/
 appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata.xml
 
 # check json output is valid
-pushd build
-src/lshw -json \
+%{_vpath_builddir}/src/lshw -json \
     -disable usb -disable pcmcia -disable isapnp \
     -disable ide -disable scsi -disable dmi -disable memory \
     -disable cpuinfo 2>/dev/null | %{__python3} -m json.tool
