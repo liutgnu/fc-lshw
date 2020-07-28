@@ -2,7 +2,7 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.19.2
-Release:       2%{?dist}
+Release:       3%{?dist}
 License:       GPLv2
 URL:           http://ezix.org/project/wiki/HardwareLiSter
 Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
@@ -93,6 +93,9 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
 
 %changelog
+* Tue Jul 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - B.02.19.2-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
+
 * Fri Apr 24 2020 Terje Rosten <terje.rosten@ntnu.no> - B.02.19.2-2
 - Add patch from openSUSE to fix rhbz#1822455
 
