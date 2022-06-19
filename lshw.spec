@@ -15,6 +15,7 @@ Patch3:        lshw-B.02.18-revert-json.patch
 Patch4:        lshw-B.02.19.2-cmake.patch
 Patch5:        https://build.opensuse.org/package/view_file/hardware/lshw/lshw-fix-mmc.patch
 Patch6:        https://build.opensuse.org/package/view_file/hardware/lshw/lshw-fix-segfault-in-apfs-volume-code.patch
+Patch7:        1000-disable-remote-dns-lookup.patch
 BuildRequires: cmake
 BuildRequires: desktop-file-utils
 BuildRequires: gcc
@@ -54,6 +55,8 @@ format.
 %patch04 -p1
 %patch05 -p1
 %patch06 -p1
+# This patch #ifdefs out the remote DNS lookup that `lshw -version` does.
+%patch07 -p1
 
 %build
 %if %{with gui}
@@ -113,6 +116,7 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata
 %changelog
 * Sun Jun 19 2022 Stewart Smith <trawets@amazon.com> - B.02.19.2-7
 - Make GUI an optional bcond
+- Disable remote DNS lookup on 'lshw -version'
 
 * Thu Jan 20 2022 Fedora Release Engineering <releng@fedoraproject.org> - B.02.19.2-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
