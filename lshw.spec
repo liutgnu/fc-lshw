@@ -1,8 +1,11 @@
 %undefine __cmake_in_source_build
+
+%bcond_without gui
+
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.19.2
-Release:       6%{?dist}
+Release:       7%{?dist}
 License:       GPLv2
 URL:           http://ezix.org/project/wiki/HardwareLiSter
 Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
@@ -17,8 +20,10 @@ BuildRequires: desktop-file-utils
 BuildRequires: gcc
 BuildRequires: gcc-c++
 BuildRequires: gettext
+%if %{with gui}
 BuildRequires: gtk2-devel >= 2.4
 BuildRequires: libappstream-glib
+%endif
 BuildRequires: ninja-build
 BuildRequires: python3-devel
 Requires:      hwdata
@@ -31,6 +36,7 @@ systems and on some PowerPC machines (PowerMac G4 is known to work).
 
 Information can be output in plain text, XML or HTML.
 
+%if %{with gui}
 %package       gui
 Summary:       Graphical hardware lister
 Requires:      polkit
@@ -39,6 +45,7 @@ Requires:      %{name} = %{version}-%{release}
 Graphical frontend for the hardware lister (lshw) tool. If desired,
 hardware information can be saved to file in plain, XML or HTML
 format.
+%endif
 
 %prep
 %setup -q
@@ -49,20 +56,29 @@ format.
 %patch06 -p1
 
 %build
-%cmake -DNOLOGO=ON -DHWDATA=OFF -DPOLICYKIT=ON -DBUILD_SHARED_LIBS=OFF  -GNinja
+%if %{with gui}
+%global gui_config -DGUI=ON
+%else
+%global gui_config -DGUI=OFF
+%endif
+
+%cmake -DNOLOGO=ON -DHWDATA=OFF -DPOLICYKIT=ON -DBUILD_SHARED_LIBS=OFF %{gui_config} -GNinja
 %cmake_build
 
 %install
 %cmake_install
+%if %{with gui}
 install -m0644 -D %{SOURCE1} %{buildroot}%{_mandir}/man1/lshw-gui.1
 ln -s gtk-lshw %{buildroot}%{_sbindir}/lshw-gui
-
+%endif
 # translations seems borken, remove for now
 #find_lang %{name}
 rm -rf %{buildroot}%{_datadir}/locale/fr/
 
 %check
+%if %{with gui}
 appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata.xml
+%endif
 
 # check json output is valid
 %{_vpath_builddir}/src/lshw -json \
@@ -77,6 +93,7 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata
 %{_mandir}/man1/lshw.1*
 %{_sbindir}/lshw
 
+%if %{with gui}
 %files gui
 %license COPYING
 %{_bindir}/lshw-gui
@@ -91,8 +108,12 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata
 %{_datadir}/applications/gtk-lshw.desktop
 %{_datadir}/appdata/gtk-lshw.appdata.xml
 %{_datadir}/polkit-1/actions/org.ezix.lshw.gui.policy
+%endif
 
 %changelog
+* Sun Jun 19 2022 Stewart Smith <trawets@amazon.com> - B.02.19.2-7
+- Make GUI an optional bcond
+
 * Thu Jan 20 2022 Fedora Release Engineering <releng@fedoraproject.org> - B.02.19.2-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
