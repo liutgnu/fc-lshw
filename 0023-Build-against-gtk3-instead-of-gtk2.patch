@@ -1,0 +1,49 @@
+From ad4ecfd29c29f6895aaf02092e6574299a2b5aa9 Mon Sep 17 00:00:00 2001
+From: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+Date: Fri, 10 Jul 2020 03:12:51 +0200
+Subject: [PATCH 23/65] Build against gtk3 instead of gtk2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Since gtk2 is on life support, it makes sense to build the gui code with
+gtk3 nowadays.
+
+I went for 3.24 because that’s the version I have available on my
+system, but it is probable that previous versions would also work, I
+don’t know.
+---
+ lshw.spec.in        | 4 ++--
+ src/gui/gtk-lshw.ui | 2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/lshw.spec.in b/lshw.spec.in
+index e837fd4..f6884ab 100644
+--- a/lshw.spec.in
++++ b/lshw.spec.in
+@@ -31,8 +31,8 @@ http://lshw.ezix.org/
+ Summary: HardWare LiSter (GUI version)
+ Group: Applications/System
+ Requires: %{name} >= %{version}
+-Requires: gtk2 >= 2.4
+-BuildRequires: gtk2-devel >= 2.4
++Requires: gtk3 >= 3.24
++BuildRequires: gtk3-devel >= 3.24
+ 
+ %description gui
+ lshw (Hardware Lister) is a small tool to provide detailed informaton on
+diff --git a/src/gui/gtk-lshw.ui b/src/gui/gtk-lshw.ui
+index 73fc08a..25ab1ad 100644
+--- a/src/gui/gtk-lshw.ui
++++ b/src/gui/gtk-lshw.ui
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <interface>
+-  <requires lib="gtk+" version="2.22"/>
++  <requires lib="gtk+" version="3.24"/>
+   <object class="GtkDialog" id="aboutlshw">
+     <property name="can_focus">False</property>
+     <property name="title" translatable="yes">About</property>
+-- 
+2.33.1
+

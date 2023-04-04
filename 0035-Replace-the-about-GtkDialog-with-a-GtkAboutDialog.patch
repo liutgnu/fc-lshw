@@ -1,0 +1,252 @@
+From e96f82ce459a6d503f70d6c7b0f762bf0d133edf Mon Sep 17 00:00:00 2001
+From: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+Date: Sat, 1 Aug 2020 15:03:23 +0200
+Subject: [PATCH 35/65] Replace the about GtkDialog with a GtkAboutDialog
+
+This reduces the amount of code needed for this feature, and integrates
+better with the rest of the system.
+---
+ src/gui/callbacks.c |  46 ++++++--------------
+ src/gui/callbacks.h |   4 --
+ src/gui/gtk-lshw.ui | 101 --------------------------------------------
+ src/gui/stock.c     |   2 -
+ 4 files changed, 12 insertions(+), 141 deletions(-)
+
+diff --git a/src/gui/callbacks.c b/src/gui/callbacks.c
+index eec3e55..b108777 100644
+--- a/src/gui/callbacks.c
++++ b/src/gui/callbacks.c
+@@ -10,7 +10,6 @@
+ #include "engine.h"
+ #include <string.h>
+ 
+-extern GtkWidget *about;
+ extern GtkWidget *mainwindow;
+ 
+ static char *id = "@(#) $Id$";
+@@ -42,18 +41,6 @@ on_save_activated                      (GSimpleAction   *action,
+   save_as(mainwindow);
+ }
+ 
+-G_MODULE_EXPORT
+-void
+-on_about_activated                     (GSimpleAction   *action,
+-                                        GVariant        *parameter,
+-                                        gpointer         app)
+-{
+-  if(GTK_IS_WIDGET(about))
+-  {
+-    gtk_widget_show(about);
+-  }
+-}
+-
+ G_MODULE_EXPORT
+ void
+ on_quit_activated                      (GSimpleAction   *action,
+@@ -65,25 +52,20 @@ on_quit_activated                      (GSimpleAction   *action,
+ 
+ G_MODULE_EXPORT
+ void
+-on_aboutclose_activate          (GtkButton       *button,
+-gpointer         user_data)
++on_about_activated                     (GSimpleAction   *action,
++                                        GVariant        *parameter,
++                                        gpointer         app)
+ {
+-  if(GTK_IS_WIDGET(about))
+-  {
+-    gtk_widget_hide(about);
+-  }
+-}
+-
++  gtk_show_about_dialog(GTK_WINDOW(mainwindow),
++                        "program-name", "GTK+ frontend for lshw",
++                        "website", "https://www.ezix.org/",
++                        "copyright", "© 2004-2011 Lyonel Vincent\n© 2020 Emmanuel Gil Peyrot",
++                        "version", getpackageversion(),
++                        "license-type", GTK_LICENSE_GPL_2_0,
++                        NULL);
+ 
+-G_MODULE_EXPORT
+-void
+-on_version_realize                     (GtkWidget       *widget,
+-gpointer         user_data)
+-{
+   const char *latest = checkupdates();
+ 
+-  gtk_label_set_text(GTK_LABEL(widget), getpackageversion());
+-
+   if(latest)
+   {
+     if(strcmp(latest, getpackageversion()) != 0)
+@@ -100,18 +82,14 @@ gpointer         user_data)
+                                   latest);
+ 
+         gtk_window_set_title(GTK_WINDOW(dialog), "Update available");
+-        /* Destroy the dialog when the user responds to it (e.g. clicks a button) */
+-        g_signal_connect_swapped (dialog, "response",
+-                           G_CALLBACK (gtk_widget_destroy),
+-                           dialog);
+       }
+ 
+-      gtk_widget_show(dialog);
++      gtk_dialog_run(GTK_DIALOG(dialog));
++      gtk_widget_destroy(dialog);
+     }
+   }
+ }
+ 
+-
+ G_MODULE_EXPORT
+ void
+ on_treeview1_row_activated             (GtkTreeView     *treeview,
+diff --git a/src/gui/callbacks.h b/src/gui/callbacks.h
+index b9b9141..e7636ef 100644
+--- a/src/gui/callbacks.h
++++ b/src/gui/callbacks.h
+@@ -25,10 +25,6 @@ on_quit_activated                      (GSimpleAction   *action,
+                                         GVariant        *parameter,
+                                         gpointer         app);
+ 
+-void on_aboutclose_activate (GtkButton * button, gpointer user_data);
+-
+-void on_version_realize (GtkWidget * widget, gpointer user_data);
+-
+ void
+ on_treeview1_row_activated (GtkTreeView * treeview,
+ 			    GtkTreePath * path,
+diff --git a/src/gui/gtk-lshw.ui b/src/gui/gtk-lshw.ui
+index cf9d678..a3c6248 100644
+--- a/src/gui/gtk-lshw.ui
++++ b/src/gui/gtk-lshw.ui
+@@ -1,107 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <interface>
+   <requires lib="gtk+" version="3.24"/>
+-  <object class="GtkDialog" id="aboutlshw">
+-    <property name="can_focus">False</property>
+-    <property name="title" translatable="yes">About</property>
+-    <property name="resizable">False</property>
+-    <property name="window_position">center-on-parent</property>
+-    <property name="destroy_with_parent">True</property>
+-    <property name="type_hint">dialog</property>
+-    <property name="skip_taskbar_hint">True</property>
+-    <property name="skip_pager_hint">True</property>
+-    <child internal-child="vbox">
+-      <object class="GtkBox" id="dialog-vbox1">
+-        <property name="visible">True</property>
+-        <property name="can_focus">False</property>
+-        <property name="orientation">vertical</property>
+-        <child internal-child="action_area">
+-          <object class="GtkButtonBox" id="dialog-action_area1">
+-            <property name="visible">True</property>
+-            <property name="can_focus">False</property>
+-            <property name="layout_style">end</property>
+-            <child>
+-              <object class="GtkButton" id="closebutton1">
+-                <property name="label">gtk-close</property>
+-                <property name="visible">True</property>
+-                <property name="can_focus">True</property>
+-                <property name="can_default">True</property>
+-                <property name="receives_default">False</property>
+-                <property name="use_stock">True</property>
+-                <signal name="activate" handler="on_aboutclose_activate" swapped="no"/>
+-                <signal name="clicked" handler="on_aboutclose_activate" swapped="no"/>
+-              </object>
+-              <packing>
+-                <property name="expand">False</property>
+-                <property name="fill">True</property>
+-                <property name="position">0</property>
+-              </packing>
+-            </child>
+-          </object>
+-          <packing>
+-            <property name="expand">False</property>
+-            <property name="fill">True</property>
+-            <property name="pack_type">end</property>
+-            <property name="position">0</property>
+-          </packing>
+-        </child>
+-        <child>
+-          <object class="GtkLabel" id="aboutext">
+-            <property name="visible">True</property>
+-            <property name="can_focus">False</property>
+-            <property name="xpad">20</property>
+-            <property name="ypad">20</property>
+-            <property name="label" translatable="yes">&lt;big&gt;&lt;b&gt;GTK+ front-end for &lt;tt&gt;lshw&lt;/tt&gt;&lt;/b&gt;&lt;/big&gt;
+-
+-© 2004-2011 Lyonel Vincent
+-&lt;tt&gt;lyonel@ezix.org&lt;/tt&gt;</property>
+-            <property name="use_markup">True</property>
+-            <property name="justify">center</property>
+-            <property name="mnemonic_widget">closebutton1</property>
+-          </object>
+-          <packing>
+-            <property name="expand">False</property>
+-            <property name="fill">False</property>
+-            <property name="position">1</property>
+-          </packing>
+-        </child>
+-        <child>
+-          <object class="GtkLinkButton" id="linkbutton1">
+-            <property name="label" translatable="yes">http://www.ezix.org/</property>
+-            <property name="visible">True</property>
+-            <property name="can_focus">True</property>
+-            <property name="receives_default">True</property>
+-            <property name="has_tooltip">True</property>
+-            <property name="relief">none</property>
+-            <property name="uri">http://www.ezix.org/</property>
+-          </object>
+-          <packing>
+-            <property name="expand">False</property>
+-            <property name="fill">True</property>
+-            <property name="position">2</property>
+-          </packing>
+-        </child>
+-        <child>
+-          <object class="GtkLabel" id="version">
+-            <property name="visible">True</property>
+-            <property name="can_focus">False</property>
+-            <property name="label" translatable="yes">VERSION</property>
+-            <property name="justify">center</property>
+-            <property name="mnemonic_widget">closebutton1</property>
+-            <signal name="realize" handler="on_version_realize" swapped="no"/>
+-          </object>
+-          <packing>
+-            <property name="expand">False</property>
+-            <property name="fill">False</property>
+-            <property name="position">3</property>
+-          </packing>
+-        </child>
+-      </object>
+-    </child>
+-    <action-widgets>
+-      <action-widget response="-7">closebutton1</action-widget>
+-    </action-widgets>
+-  </object>
+   <object class="GtkApplicationWindow" id="mainwindow">
+     <property name="can_focus">False</property>
+     <property name="title" translatable="yes">lshw</property>
+diff --git a/src/gui/stock.c b/src/gui/stock.c
+index ce0b42a..c3159b8 100644
+--- a/src/gui/stock.c
++++ b/src/gui/stock.c
+@@ -8,7 +8,6 @@ static char *id = "@(#) $Id$";
+ #define UIFILE "gtk-lshw.ui"
+ 
+ GtkWidget *mainwindow = NULL;
+-GtkWidget *about = NULL;
+ GtkWidget *list1 = NULL;
+ GtkWidget *list2 = NULL;
+ GtkWidget *list3 = NULL;
+@@ -145,7 +144,6 @@ void lshw_ui_init(GtkApplication *app)
+   g_free(uiname);
+ 
+   mainwindow = GTK_WIDGET( gtk_builder_get_object( builder, "mainwindow" ) );
+-  about = GTK_WIDGET( gtk_builder_get_object( builder, "aboutlshw" ) );
+   list1 = GTK_WIDGET(gtk_builder_get_object( builder, "treeview1"));
+   list2 = GTK_WIDGET(gtk_builder_get_object( builder, "treeview2"));
+   list3 = GTK_WIDGET(gtk_builder_get_object( builder, "treeview3"));
+-- 
+2.33.1
+

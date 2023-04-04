@@ -1,0 +1,98 @@
+From 5fd82e398ba94766f0981f97988c8f14ab4297c5 Mon Sep 17 00:00:00 2001
+From: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+Date: Fri, 10 Jul 2020 05:53:57 +0200
+Subject: [PATCH 31/65] Move to GtkApplication
+
+This will eventually let us use GActions to build our menus and buttons.
+---
+ src/gui/gtk-lshw.c  | 36 ++++++++++++++++++++++--------------
+ src/gui/gtk-lshw.ui |  3 +--
+ 2 files changed, 23 insertions(+), 16 deletions(-)
+
+diff --git a/src/gui/gtk-lshw.c b/src/gui/gtk-lshw.c
+index 9ac525c..6c0f0bb 100644
+--- a/src/gui/gtk-lshw.c
++++ b/src/gui/gtk-lshw.c
+@@ -11,17 +11,10 @@ static char *id = "@(#) $Id$";
+ 
+ extern GtkWidget *mainwindow;
+ 
+-int
+-main (int argc, char *argv[])
++static void
++activate (GApplication *app,
++          gpointer      user_data)
+ {
+-#ifndef NONLS
+-  bindtextdomain (PACKAGE, LOCALEDIR);
+-  bind_textdomain_codeset (PACKAGE, "UTF-8");
+-  textdomain (PACKAGE);
+-#endif
+-
+-  gtk_init (&argc, &argv);
+-
+   if(geteuid() != 0)
+   {
+     bool proceed = false;
+@@ -39,19 +32,34 @@ main (int argc, char *argv[])
+     gtk_widget_destroy (dialog);
+ 
+     if(!proceed)
+-      return -1;
++      return;
+   }
+ 
+   lshw_gtk_stock_init();
+   lshw_ui_init();
+ 
+   if(!mainwindow)
+-    return(1);
++    return;
+ 
+   gtk_widget_show(mainwindow);
+-  gtk_main ();
++  gtk_application_add_window(GTK_APPLICATION(app), GTK_WINDOW(mainwindow));
++}
++
++int
++main (int argc, char *argv[])
++{
++#ifndef NONLS
++  bindtextdomain (PACKAGE, LOCALEDIR);
++  bind_textdomain_codeset (PACKAGE, "UTF-8");
++  textdomain (PACKAGE);
++#endif
++
++  GtkApplication *app = gtk_application_new ("org.ezix.gtk-lshw", G_APPLICATION_FLAGS_NONE);
++  g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
++  int status = g_application_run (G_APPLICATION (app), argc, argv);
++  g_object_unref (app);
+ 
+   (void) &id;                                     // avoid warning "id defined but not used"
+ 
+-  return 0;
++  return status;
+ }
+diff --git a/src/gui/gtk-lshw.ui b/src/gui/gtk-lshw.ui
+index 1656f80..7504c76 100644
+--- a/src/gui/gtk-lshw.ui
++++ b/src/gui/gtk-lshw.ui
+@@ -102,14 +102,13 @@
+       <action-widget response="-7">closebutton1</action-widget>
+     </action-widgets>
+   </object>
+-  <object class="GtkWindow" id="mainwindow">
++  <object class="GtkApplicationWindow" id="mainwindow">
+     <property name="visible">True</property>
+     <property name="can_focus">False</property>
+     <property name="title" translatable="yes">lshw</property>
+     <property name="default_width">700</property>
+     <property name="default_height">480</property>
+     <property name="startup_id">org.ezix.gtk-lshw</property>
+-    <signal name="delete-event" handler="gtk_main_quit" swapped="no"/>
+     <signal name="map" handler="on_lshw_map" after="yes" swapped="no"/>
+     <child>
+       <object class="GtkBox" id="main-box">
+-- 
+2.33.1
+

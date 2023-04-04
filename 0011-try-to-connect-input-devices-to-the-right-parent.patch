@@ -1,0 +1,29 @@
+From f6138333811f7f2bf01551c70f5726f7c556dd36 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Fri, 3 Apr 2020 22:42:21 +0200
+Subject: [PATCH 11/65] try to connect input devices to the right parent
+
+---
+ src/core/input.cc | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/src/core/input.cc b/src/core/input.cc
+index a8d8eaf..ab37d37 100644
+--- a/src/core/input.cc
++++ b/src/core/input.cc
+@@ -52,6 +52,12 @@ bool scan_input(hwNode & n)
+     if(!e.hassubdir("id")) continue;
+ 
+     hwNode *device = n.findChildByBusInfo(e.leaf().businfo());
++    if(!device)
++    {
++      device = n.findChildByBusInfo(e.leaf().parent().businfo());
++      if(device)
++        device = device->addChild(hwNode("input", hw::input));
++    }
+     if(!device)
+       device = n.addChild(hwNode("input", hw::input));
+     else
+-- 
+2.33.1
+

@@ -1,0 +1,39 @@
+From 4c91193fb6ba22be13e8d342dcb1db4a7738d38c Mon Sep 17 00:00:00 2001
+From: Alex Henrie <alexhenrie24@gmail.com>
+Date: Fri, 18 Jun 2021 00:40:51 -0600
+Subject: [PATCH 49/65] Fix typos in translatable messages
+
+---
+ src/core/dmi.cc | 2 +-
+ src/lshw.cc     | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/core/dmi.cc b/src/core/dmi.cc
+index 96b6506..df5db6b 100644
+--- a/src/core/dmi.cc
++++ b/src/core/dmi.cc
+@@ -277,7 +277,7 @@ static const char *dmi_board_type(u8 data)
+     "",
+     "",
+     N_("Server Blade"),
+-    N_("Connectivitiy Switch"),
++    N_("Connectivity Switch"),
+     N_("System Management Module"),
+     N_("Processor Module"),
+     N_("I/O Module"),
+diff --git a/src/lshw.cc b/src/lshw.cc
+index 571b1c3..e5d6b4f 100644
+--- a/src/lshw.cc
++++ b/src/lshw.cc
+@@ -35,7 +35,7 @@ void usage(const char *progname)
+     fprintf(stderr, _("\t-X              use graphical interface\n"));
+   fprintf(stderr, _("\noptions can be\n"));
+ #ifdef SQLITE
+-  fprintf(stderr, _("\t-dump filename  displays output and dump collected information into a file (SQLite database)\n"));
++  fprintf(stderr, _("\t-dump filename  display output and dump collected information into a file (SQLite database)\n"));
+ #endif
+   fprintf(stderr, _("\t-class CLASS    only show a certain class of hardware\n"));
+   fprintf(stderr, _("\t-C CLASS        same as '-class CLASS'\n"));
+-- 
+2.33.1
+

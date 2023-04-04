@@ -1,0 +1,40 @@
+From 872b0996df37aae586575ca8021c2509c05067b0 Mon Sep 17 00:00:00 2001
+From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+Date: Fri, 6 Mar 2020 04:41:33 -0600
+Subject: [PATCH 13/65] devtree: Add chip-id from CPU node
+
+Add chip-id from CPU node into the configuration if available. CPU's are
+behind the CHIP on Power systems. By adding chip-id it helps to map what cpus
+are sitting behind which chip.
+
+Sample output:
+     *-cpu:10
+          description: POWER8E (raw), altivec supported
+          product: 00FX746 FRU# 00FX522
+          physical id: 176
+          bus info: cpu@10
+          version: 2.1 (pvr 004b 0201)
+          ...
+          configuration: chip-id=1 threads=8
+
+Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+---
+ src/core/device-tree.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/core/device-tree.cc b/src/core/device-tree.cc
+index f43d34f..af665a4 100644
+--- a/src/core/device-tree.cc
++++ b/src/core/device-tree.cc
+@@ -492,6 +492,8 @@ static void fill_core_vpd(hwNode & cpu, string & basepath,
+     return;
+ 
+   chip_id = get_u32(basepath + "/ibm,chip-id");
++  cpu.setConfig("chip-id", chip_id);
++
+   data = chip_vpd[chip_id];
+   xscom_path = xscoms[chip_id];
+ 
+-- 
+2.33.1
+

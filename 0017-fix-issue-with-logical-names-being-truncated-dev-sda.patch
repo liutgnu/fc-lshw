@@ -1,0 +1,29 @@
+From 4348e283f8a0bdd40b97c5d0b6e12354576b3113 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Mon, 25 May 2020 09:31:05 +0200
+Subject: [PATCH 17/65] =?UTF-8?q?fix=20issue=20with=20logical=20names=20be?=
+ =?UTF-8?q?ing=20truncated=20(`/dev/sda`=20=E2=86=92=20`sda`)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ src/core/hw.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/core/hw.cc b/src/core/hw.cc
+index f7da370..aca424c 100644
+--- a/src/core/hw.cc
++++ b/src/core/hw.cc
+@@ -1083,7 +1083,7 @@ void hwNode::setLogicalName(const string & name)
+       This->logicalnames.push_back("/dev/" + n);
+     }
+     else
+-      This->logicalnames.push_back(basename(n.c_str()));
++      This->logicalnames.push_back((n[0]=='/')?n:basename(n.c_str()));
+ 
+     if(This->dev == "")
+       This->dev = get_devid(n);
+-- 
+2.33.1
+

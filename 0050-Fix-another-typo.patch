@@ -1,0 +1,25 @@
+From a252ea923c747a548e0012ef41ec588e0179907f Mon Sep 17 00:00:00 2001
+From: Alex Henrie <alexhenrie24@gmail.com>
+Date: Tue, 29 Jun 2021 20:34:35 -0600
+Subject: [PATCH 50/65] Fix another typo
+
+---
+ src/core/dmi.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/core/dmi.cc b/src/core/dmi.cc
+index df5db6b..c356c29 100644
+--- a/src/core/dmi.cc
++++ b/src/core/dmi.cc
+@@ -462,7 +462,7 @@ u8 cachetype = 0)
+   switch ((config >> 8) & 3)
+   {
+     case 0:
+-      n.addCapability("write-through", _("Write-trough"));
++      n.addCapability("write-through", _("Write-through"));
+       break;
+     case 1:
+       n.addCapability("write-back", _("Write-back"));
+-- 
+2.33.1
+

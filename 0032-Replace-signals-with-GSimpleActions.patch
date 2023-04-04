@@ -1,0 +1,278 @@
+From d1690196a9007568bfce3847841ea2b509eb3150 Mon Sep 17 00:00:00 2001
+From: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+Date: Fri, 10 Jul 2020 06:28:06 +0200
+Subject: [PATCH 32/65] Replace signals with GSimpleActions
+
+This unifies actions pertaining to the application.
+---
+ src/gui/callbacks.c | 62 ++++++++++++++++++++++-----------------------
+ src/gui/callbacks.h | 35 ++++++++++++++++---------
+ src/gui/gtk-lshw.c  | 14 ++++++++++
+ src/gui/gtk-lshw.ui | 16 ++++++------
+ 4 files changed, 76 insertions(+), 51 deletions(-)
+
+diff --git a/src/gui/callbacks.c b/src/gui/callbacks.c
+index f8aa0cb..eec3e55 100644
+--- a/src/gui/callbacks.c
++++ b/src/gui/callbacks.c
+@@ -17,17 +17,36 @@ static char *id = "@(#) $Id$";
+ 
+ G_MODULE_EXPORT
+ void
+-refresh_display                        (GtkMenuItem     *menuitem,
+-gpointer         user_data)
++on_go_up_activated                     (GSimpleAction   *action,
++                                        GVariant        *parameter,
++                                        gpointer         app)
++{
++  go_back(mainwindow);
++}
++
++G_MODULE_EXPORT
++void
++on_refresh_activated                   (GSimpleAction   *action,
++                                        GVariant        *parameter,
++                                        gpointer         app)
+ {
+   refresh(mainwindow);
+ }
+ 
++G_MODULE_EXPORT
++void
++on_save_activated                      (GSimpleAction   *action,
++                                        GVariant        *parameter,
++                                        gpointer         app)
++{
++  save_as(mainwindow);
++}
+ 
+ G_MODULE_EXPORT
+ void
+-on_about1_activate                     (GtkMenuItem     *menuitem,
+-gpointer         user_data)
++on_about_activated                     (GSimpleAction   *action,
++                                        GVariant        *parameter,
++                                        gpointer         app)
+ {
+   if(GTK_IS_WIDGET(about))
+   {
+@@ -35,6 +54,14 @@ gpointer         user_data)
+   }
+ }
+ 
++G_MODULE_EXPORT
++void
++on_quit_activated                      (GSimpleAction   *action,
++                                        GVariant        *parameter,
++                                        gpointer         app)
++{
++  g_application_quit(G_APPLICATION(app));
++}
+ 
+ G_MODULE_EXPORT
+ void
+@@ -147,15 +174,6 @@ gpointer         user_data)
+ }
+ 
+ 
+-G_MODULE_EXPORT
+-void
+-go_up                                  (GtkToolButton   *toolbutton,
+-gpointer         user_data)
+-{
+-  go_back(mainwindow);
+-}
+-
+-
+ G_MODULE_EXPORT
+ void
+ on_lshw_map                            (GtkWidget       *widget,
+@@ -163,21 +181,3 @@ gpointer         user_data)
+ {
+   refresh(mainwindow);
+ }
+-
+-G_MODULE_EXPORT
+-void
+-on_save_activate                       (GtkMenuItem     *menuitem,
+-                                        gpointer         user_data)
+-{
+-  save_as(mainwindow);
+-}
+-
+-
+-G_MODULE_EXPORT
+-void
+-on_savebutton_clicked                  (GtkToolButton   *toolbutton,
+-                                        gpointer         user_data)
+-{
+-  on_save_activate(NULL, NULL);
+-}
+-
+diff --git a/src/gui/callbacks.h b/src/gui/callbacks.h
+index cc856e4..b9b9141 100644
+--- a/src/gui/callbacks.h
++++ b/src/gui/callbacks.h
+@@ -1,8 +1,29 @@
+ #include <gtk/gtk.h>
+ 
+-void refresh_display (GtkMenuItem * menuitem, gpointer user_data);
++void
++on_go_up_activated                     (GSimpleAction   *action,
++                                        GVariant        *parameter,
++                                        gpointer         app);
++
++void
++on_refresh_activated                   (GSimpleAction   *action,
++                                        GVariant        *parameter,
++                                        gpointer         app);
+ 
+-void on_about1_activate (GtkMenuItem * menuitem, gpointer user_data);
++void
++on_save_activated                      (GSimpleAction   *action,
++                                        GVariant        *parameter,
++                                        gpointer         app);
++
++void
++on_about_activated                     (GSimpleAction   *action,
++                                        GVariant        *parameter,
++                                        gpointer         app);
++
++void
++on_quit_activated                      (GSimpleAction   *action,
++                                        GVariant        *parameter,
++                                        gpointer         app);
+ 
+ void on_aboutclose_activate (GtkButton * button, gpointer user_data);
+ 
+@@ -35,14 +56,4 @@ void on_treeview2_cursor_changed (GtkTreeView * treeview, gpointer user_data);
+ 
+ void on_treeview3_cursor_changed (GtkTreeView * treeview, gpointer user_data);
+ 
+-void go_up (GtkToolButton * toolbutton, gpointer user_data);
+-
+ void on_lshw_map (GtkWidget * widget, gpointer user_data);
+-
+-void
+-on_save_activate                       (GtkMenuItem     *menuitem,
+-                                        gpointer         user_data);
+-
+-void
+-on_savebutton_clicked                  (GtkToolButton   *toolbutton,
+-                                        gpointer         user_data);
+diff --git a/src/gui/gtk-lshw.c b/src/gui/gtk-lshw.c
+index 6c0f0bb..0dc3aff 100644
+--- a/src/gui/gtk-lshw.c
++++ b/src/gui/gtk-lshw.c
+@@ -6,11 +6,21 @@
+ #include "config.h"
+ #include "stock.h"
+ #include "engine.h"
++#include "callbacks.h"
+ 
+ static char *id = "@(#) $Id$";
+ 
+ extern GtkWidget *mainwindow;
+ 
++static GActionEntry app_entries[] =
++{
++  { "go_up",   on_go_up_activated,   NULL, NULL, NULL },
++  { "refresh", on_refresh_activated, NULL, NULL, NULL },
++  { "save",    on_save_activated,    NULL, NULL, NULL },
++  { "about",   on_about_activated,   NULL, NULL, NULL },
++  { "quit",    on_quit_activated,    NULL, NULL, NULL }
++};
++
+ static void
+ activate (GApplication *app,
+           gpointer      user_data)
+@@ -35,6 +45,10 @@ activate (GApplication *app,
+       return;
+   }
+ 
++  g_action_map_add_action_entries (G_ACTION_MAP (app),
++                                   app_entries, G_N_ELEMENTS (app_entries),
++                                   app);
++
+   lshw_gtk_stock_init();
+   lshw_ui_init();
+ 
+diff --git a/src/gui/gtk-lshw.ui b/src/gui/gtk-lshw.ui
+index 7504c76..d24e05c 100644
+--- a/src/gui/gtk-lshw.ui
++++ b/src/gui/gtk-lshw.ui
+@@ -136,7 +136,7 @@
+                         <property name="can_focus">False</property>
+                         <property name="use_underline">True</property>
+                         <property name="use_stock">True</property>
+-                        <signal name="activate" handler="on_save_activate" swapped="no"/>
++                        <property name="action_name">app.save</property>
+                       </object>
+                     </child>
+                     <child>
+@@ -152,7 +152,7 @@
+                         <property name="can_focus">False</property>
+                         <property name="use_underline">True</property>
+                         <property name="use_stock">True</property>
+-                        <signal name="activate" handler="gtk_main_quit" swapped="no"/>
++                        <property name="action_name">app.quit</property>
+                       </object>
+                     </child>
+                   </object>
+@@ -176,7 +176,7 @@
+                         <property name="can_focus">False</property>
+                         <property name="use_underline">True</property>
+                         <property name="use_stock">True</property>
+-                        <signal name="activate" handler="refresh_display" swapped="no"/>
++                        <property name="action_name">app.refresh</property>
+                       </object>
+                     </child>
+                   </object>
+@@ -200,7 +200,7 @@
+                         <property name="can_focus">False</property>
+                         <property name="use_underline">True</property>
+                         <property name="use_stock">True</property>
+-                        <signal name="activate" handler="on_about1_activate" swapped="no"/>
++                        <property name="action_name">app.about</property>
+                       </object>
+                     </child>
+                   </object>
+@@ -225,7 +225,7 @@
+                 <property name="sensitive">False</property>
+                 <property name="can_focus">False</property>
+                 <property name="stock_id">gtk-go-up</property>
+-                <signal name="clicked" handler="go_up" swapped="no"/>
++                <property name="action_name">app.go_up</property>
+               </object>
+               <packing>
+                 <property name="expand">False</property>
+@@ -238,7 +238,7 @@
+                 <property name="can_focus">False</property>
+                 <property name="tooltip_text" translatable="yes">Rescan the hardware</property>
+                 <property name="stock_id">gtk-refresh</property>
+-                <signal name="clicked" handler="refresh_display" swapped="no"/>
++                <property name="action_name">app.refresh</property>
+               </object>
+               <packing>
+                 <property name="expand">False</property>
+@@ -251,7 +251,7 @@
+                 <property name="sensitive">False</property>
+                 <property name="can_focus">False</property>
+                 <property name="stock_id">gtk-save</property>
+-                <signal name="clicked" handler="on_savebutton_clicked" swapped="no"/>
++                <property name="action_name">app.save</property>
+               </object>
+               <packing>
+                 <property name="expand">False</property>
+@@ -263,7 +263,7 @@
+                 <property name="visible">True</property>
+                 <property name="can_focus">False</property>
+                 <property name="stock_id">gtk-quit</property>
+-                <signal name="clicked" handler="gtk_main_quit" swapped="no"/>
++                <property name="action_name">app.quit</property>
+               </object>
+               <packing>
+                 <property name="expand">False</property>
+-- 
+2.33.1
+

@@ -1,0 +1,25 @@
+From 5a0bad9020f731cf5b5a0744a9323f97b3a1efe9 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Tue, 12 Oct 2021 23:37:40 +0200
+Subject: [PATCH 59/65] fix typo
+
+---
+ src/core/network.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/core/network.cc b/src/core/network.cc
+index 613c1af..d66c978 100644
+--- a/src/core/network.cc
++++ b/src/core/network.cc
+@@ -348,7 +348,7 @@ static void updateCapabilities(hwNode & interface, u32 supported, u32 supported2
+   if(supported & SUPPORTED_BNC)
+     interface.addCapability("bnc", _("BNC"));
+   if(supported & SUPPORTED_MII)
+-    interface.addCapability("mii", _("Media Independant Interface"));
++    interface.addCapability("mii", _("Media Independent Interface"));
+   if(supported & SUPPORTED_FIBRE)
+     interface.addCapability("fibre",_( "optical fibre"));
+   if(supported & SUPPORTED_10baseT_Half)
+-- 
+2.33.1
+

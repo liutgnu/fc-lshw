@@ -1,0 +1,232 @@
+From 9d9b7103257abc6fe26b383253e1f15f726f31cd Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Tue, 12 Oct 2021 23:42:02 +0200
+Subject: [PATCH 60/65] add some includes
+
+maybe needed for newer GCCs
+---
+ src/core/cdrom.cc         | 1 +
+ src/core/cpuid.cc         | 1 +
+ src/core/fb.cc            | 1 +
+ src/core/ideraid.cc       | 1 +
+ src/core/mounts.cc        | 2 +-
+ src/core/osutils.cc       | 1 +
+ src/core/partitions.cc    | 2 ++
+ src/core/pci.cc           | 1 +
+ src/core/pcmcia-legacy.cc | 1 +
+ src/core/pcmcia.cc        | 2 ++
+ src/core/smp.cc           | 1 +
+ src/core/spd.cc           | 1 +
+ src/core/usb.cc           | 2 ++
+ src/core/volumes.cc       | 1 +
+ src/gui/engine.cc         | 2 ++
+ src/gui/print-gui.cc      | 1 +
+ 16 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/src/core/cdrom.cc b/src/core/cdrom.cc
+index 11b9a84..58fa7b0 100644
+--- a/src/core/cdrom.cc
++++ b/src/core/cdrom.cc
+@@ -25,6 +25,7 @@
+ #include <unistd.h>
+ #include <limits.h>
+ #include <linux/cdrom.h>
++#include <climits>
+ 
+ __ID("@(#) $Id$");
+ 
+diff --git a/src/core/cpuid.cc b/src/core/cpuid.cc
+index c40dc98..3cb60ac 100644
+--- a/src/core/cpuid.cc
++++ b/src/core/cpuid.cc
+@@ -7,6 +7,7 @@
+ #include <fcntl.h>
+ #include <sys/stat.h>
+ #include <sys/time.h>
++#include <cstring>
+ 
+ __ID("@(#) $Id$");
+ 
+diff --git a/src/core/fb.cc b/src/core/fb.cc
+index 5456204..d198982 100644
+--- a/src/core/fb.cc
++++ b/src/core/fb.cc
+@@ -14,6 +14,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <errno.h>
++#include <cstring>
+ 
+ __ID("@(#) $Id$");
+ 
+diff --git a/src/core/ideraid.cc b/src/core/ideraid.cc
+index 5cff28f..5e84ab0 100644
+--- a/src/core/ideraid.cc
++++ b/src/core/ideraid.cc
+@@ -20,6 +20,7 @@
+ #include <string.h>
+ #include <dirent.h>
+ #include <ctype.h>
++#include <cstring>
+ #include <vector>
+ #include <linux/hdreg.h>
+ #include <regex.h>
+diff --git a/src/core/mounts.cc b/src/core/mounts.cc
+index 495a3c2..79b682e 100644
+--- a/src/core/mounts.cc
++++ b/src/core/mounts.cc
+@@ -14,7 +14,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
+-
++#include <cstdlib>
+ 
+ __ID("@(#) $Id$");
+ 
+diff --git a/src/core/osutils.cc b/src/core/osutils.cc
+index 8cce54c..cfa09ca 100644
+--- a/src/core/osutils.cc
++++ b/src/core/osutils.cc
+@@ -3,6 +3,7 @@
+ #include <sstream>
+ #include <iomanip>
+ #include <stack>
++#include <cstring>
+ #include <fcntl.h>
+ #include <sys/stat.h>
+ #include <unistd.h>
+diff --git a/src/core/partitions.cc b/src/core/partitions.cc
+index 7b9fd4f..69fdc2c 100644
+--- a/src/core/partitions.cc
++++ b/src/core/partitions.cc
+@@ -21,6 +21,8 @@
+ #include "volumes.h"
+ #include "osutils.h"
+ #include <stdio.h>
++#include <stdlib.h>
++#include <cstring>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+diff --git a/src/core/pci.cc b/src/core/pci.cc
+index a1dd5c7..5040d75 100644
+--- a/src/core/pci.cc
++++ b/src/core/pci.cc
+@@ -14,6 +14,7 @@
+ #include <string.h>
+ #include <stdlib.h>
+ #include <dirent.h>
++#include <cstring>
+ 
+ __ID("@(#) $Id$");
+ 
+diff --git a/src/core/pcmcia-legacy.cc b/src/core/pcmcia-legacy.cc
+index bf68911..8983ccb 100644
+--- a/src/core/pcmcia-legacy.cc
++++ b/src/core/pcmcia-legacy.cc
+@@ -9,6 +9,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <errno.h>
++#include <cstring>
+ 
+ __ID("@(#) $Id$");
+ 
+diff --git a/src/core/pcmcia.cc b/src/core/pcmcia.cc
+index 1db47b2..4d93947 100644
+--- a/src/core/pcmcia.cc
++++ b/src/core/pcmcia.cc
+@@ -6,6 +6,8 @@
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ #include <unistd.h>
++#include <cstdlib>
++#include <cstring>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+diff --git a/src/core/smp.cc b/src/core/smp.cc
+index 9bd3631..df1c88b 100644
+--- a/src/core/smp.cc
++++ b/src/core/smp.cc
+@@ -11,6 +11,7 @@
+ #include <fcntl.h>
+ #include <string.h>
+ #include <unistd.h>
++#include <cstring>
+ 
+ #include "osutils.h"
+ 
+diff --git a/src/core/spd.cc b/src/core/spd.cc
+index a304d06..babdf1b 100644
+--- a/src/core/spd.cc
++++ b/src/core/spd.cc
+@@ -9,6 +9,7 @@
+ #include <string>
+ #include <dirent.h>
+ #include <stdio.h>
++#include <cstring>
+ 
+ __ID("@(#) $Id$");
+ 
+diff --git a/src/core/usb.cc b/src/core/usb.cc
+index da65e10..353036d 100644
+--- a/src/core/usb.cc
++++ b/src/core/usb.cc
+@@ -14,6 +14,7 @@
+ #include "heuristics.h"
+ #include "options.h"
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <map>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+@@ -24,6 +25,7 @@
+ #include <stdlib.h>
+ #include <unistd.h>
+ #include <dirent.h>
++#include <cstring>
+ 
+ #define PROCBUSUSBDEVICES "/proc/bus/usb/devices"
+ #define SYSKERNELDEBUGUSBDEVICES "/sys/kernel/debug/usb/devices"
+diff --git a/src/core/volumes.cc b/src/core/volumes.cc
+index 6fce2ee..53096ba 100644
+--- a/src/core/volumes.cc
++++ b/src/core/volumes.cc
+@@ -22,6 +22,7 @@
+ #include <unistd.h>
+ #include <stdint.h>
+ #include <time.h>
++#include <cstring>
+ 
+ __ID("@(#) $Id$");
+ 
+diff --git a/src/gui/engine.cc b/src/gui/engine.cc
+index 2962ec8..ea442cc 100644
+--- a/src/gui/engine.cc
++++ b/src/gui/engine.cc
+@@ -6,6 +6,8 @@
+ #include "osutils.h"
+ #include "options.h"
+ 
++#include <cstring>
++#include <cstdlib>
+ #include <iostream>
+ #include <fstream>
+ #include <sys/utsname.h>
+diff --git a/src/gui/print-gui.cc b/src/gui/print-gui.cc
+index 4138424..916f25d 100644
+--- a/src/gui/print-gui.cc
++++ b/src/gui/print-gui.cc
+@@ -10,6 +10,7 @@
+ #include "version.h"
+ #include "osutils.h"
+ #include "stock.h"
++#include <cstring>
+ #include <sstream>
+ #include <iomanip>
+ #include <unistd.h>
+-- 
+2.33.1
+

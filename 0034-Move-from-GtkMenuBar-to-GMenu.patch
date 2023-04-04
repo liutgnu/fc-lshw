@@ -1,0 +1,239 @@
+From bc5046d9917fe9cf84dd899f90aef5b90b7d4b04 Mon Sep 17 00:00:00 2001
+From: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+Date: Wed, 15 Jul 2020 16:54:27 +0200
+Subject: [PATCH 34/65] Move from GtkMenuBar to GMenu
+
+This moves forward with gtk4 support, while also allowing a global menu
+for environments which use one, such as GNOME.
+
+I also added shortcuts so that users can press ^Q, ^R and ^S to quit,
+refresh and save.
+---
+ src/gui/gtk-lshw.c  |   2 +-
+ src/gui/gtk-lshw.ui | 138 ++++++++++++--------------------------------
+ src/gui/stock.c     |   6 +-
+ src/gui/stock.h     |   4 +-
+ 4 files changed, 47 insertions(+), 103 deletions(-)
+
+diff --git a/src/gui/gtk-lshw.c b/src/gui/gtk-lshw.c
+index 7b91ec5..d3e531c 100644
+--- a/src/gui/gtk-lshw.c
++++ b/src/gui/gtk-lshw.c
+@@ -57,7 +57,7 @@ activate (GApplication *app,
+   g_simple_action_set_enabled(save_action, FALSE);
+ 
+   lshw_gtk_stock_init();
+-  lshw_ui_init();
++  lshw_ui_init(GTK_APPLICATION(app));
+ 
+   if(!mainwindow)
+     return;
+diff --git a/src/gui/gtk-lshw.ui b/src/gui/gtk-lshw.ui
+index 76fcd19..cf9d678 100644
+--- a/src/gui/gtk-lshw.ui
++++ b/src/gui/gtk-lshw.ui
+@@ -103,7 +103,6 @@
+     </action-widgets>
+   </object>
+   <object class="GtkApplicationWindow" id="mainwindow">
+-    <property name="visible">True</property>
+     <property name="can_focus">False</property>
+     <property name="title" translatable="yes">lshw</property>
+     <property name="default_width">700</property>
+@@ -115,105 +114,6 @@
+         <property name="visible">True</property>
+         <property name="can_focus">False</property>
+         <property name="orientation">GTK_ORIENTATION_VERTICAL</property>
+-        <child>
+-          <object class="GtkMenuBar" id="menubar1">
+-            <property name="visible">True</property>
+-            <property name="can_focus">False</property>
+-            <child>
+-              <object class="GtkMenuItem" id="menuitem1">
+-                <property name="visible">True</property>
+-                <property name="can_focus">False</property>
+-                <property name="label" translatable="yes">_File</property>
+-                <property name="use_underline">True</property>
+-                <child type="submenu">
+-                  <object class="GtkMenu" id="menu1">
+-                    <property name="visible">True</property>
+-                    <property name="can_focus">False</property>
+-                    <child>
+-                      <object class="GtkImageMenuItem" id="savemenu">
+-                        <property name="label">gtk-save</property>
+-                        <property name="visible">True</property>
+-                        <property name="can_focus">False</property>
+-                        <property name="use_underline">True</property>
+-                        <property name="use_stock">True</property>
+-                        <property name="action_name">app.save</property>
+-                      </object>
+-                    </child>
+-                    <child>
+-                      <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
+-                        <property name="visible">True</property>
+-                        <property name="can_focus">False</property>
+-                      </object>
+-                    </child>
+-                    <child>
+-                      <object class="GtkImageMenuItem" id="imagemenuitem5">
+-                        <property name="label">gtk-quit</property>
+-                        <property name="visible">True</property>
+-                        <property name="can_focus">False</property>
+-                        <property name="use_underline">True</property>
+-                        <property name="use_stock">True</property>
+-                        <property name="action_name">app.quit</property>
+-                      </object>
+-                    </child>
+-                  </object>
+-                </child>
+-              </object>
+-            </child>
+-            <child>
+-              <object class="GtkMenuItem" id="menuitem3">
+-                <property name="visible">True</property>
+-                <property name="can_focus">False</property>
+-                <property name="label" translatable="yes">_View</property>
+-                <property name="use_underline">True</property>
+-                <child type="submenu">
+-                  <object class="GtkMenu" id="menu2">
+-                    <property name="visible">True</property>
+-                    <property name="can_focus">False</property>
+-                    <child>
+-                      <object class="GtkImageMenuItem" id="refresh1">
+-                        <property name="label">gtk-refresh</property>
+-                        <property name="visible">True</property>
+-                        <property name="can_focus">False</property>
+-                        <property name="use_underline">True</property>
+-                        <property name="use_stock">True</property>
+-                        <property name="action_name">app.refresh</property>
+-                      </object>
+-                    </child>
+-                  </object>
+-                </child>
+-              </object>
+-            </child>
+-            <child>
+-              <object class="GtkMenuItem" id="menuitem4">
+-                <property name="visible">True</property>
+-                <property name="can_focus">False</property>
+-                <property name="label" translatable="yes">_Help</property>
+-                <property name="use_underline">True</property>
+-                <child type="submenu">
+-                  <object class="GtkMenu" id="menu3">
+-                    <property name="visible">True</property>
+-                    <property name="can_focus">False</property>
+-                    <child>
+-                      <object class="GtkImageMenuItem" id="imagemenuitem10">
+-                        <property name="label">gtk-about</property>
+-                        <property name="visible">True</property>
+-                        <property name="can_focus">False</property>
+-                        <property name="use_underline">True</property>
+-                        <property name="use_stock">True</property>
+-                        <property name="action_name">app.about</property>
+-                      </object>
+-                    </child>
+-                  </object>
+-                </child>
+-              </object>
+-            </child>
+-          </object>
+-          <packing>
+-            <property name="expand">False</property>
+-            <property name="fill">True</property>
+-            <property name="position">0</property>
+-          </packing>
+-        </child>
+         <child>
+           <object class="GtkToolbar" id="toolbar1">
+             <property name="visible">True</property>
+@@ -423,4 +323,42 @@
+       </object>
+     </child>
+   </object>
++  <menu id="menubar">
++    <submenu>
++      <attribute name="label" translatable="yes">_File</attribute>
++      <section>
++        <item>
++          <attribute name="label" translatable="yes">_Save</attribute>
++          <attribute name="action">app.save</attribute>
++          <attribute name="accel">&lt;Control&gt;s</attribute>
++        </item>
++      </section>
++      <section>
++        <item>
++          <attribute name="label" translatable="yes">_Quit</attribute>
++          <attribute name="action">app.quit</attribute>
++          <attribute name="accel">&lt;Control&gt;q</attribute>
++        </item>
++      </section>
++    </submenu>
++    <submenu>
++      <attribute name="label" translatable="yes">_View</attribute>
++      <section>
++        <item>
++          <attribute name="label" translatable="yes">_Refresh</attribute>
++          <attribute name="action">app.refresh</attribute>
++          <attribute name="accel">&lt;Control&gt;r</attribute>
++        </item>
++      </section>
++    </submenu>
++    <submenu>
++      <attribute name="label" translatable="yes">_Help</attribute>
++      <section>
++        <item>
++          <attribute name="label" translatable="yes">_About</attribute>
++          <attribute name="action">app.about</attribute>
++        </item>
++      </section>
++    </submenu>
++  </menu>
+ </interface>
+diff --git a/src/gui/stock.c b/src/gui/stock.c
+index fa18f9e..ce0b42a 100644
+--- a/src/gui/stock.c
++++ b/src/gui/stock.c
+@@ -14,6 +14,7 @@ GtkWidget *list2 = NULL;
+ GtkWidget *list3 = NULL;
+ GtkWidget *description = NULL;
+ GtkWidget *statusbar = NULL;
++GMenuModel *menubar = NULL;
+ GHashTable *pixbufs = NULL;
+ 
+ static struct StockIcon
+@@ -118,7 +119,7 @@ lshw_gtk_stock_init(void)
+   (void) &id;                                     /* avoid "id defined but not used" warning */
+ }
+ 
+-void lshw_ui_init(void)
++void lshw_ui_init(GtkApplication *app)
+ {
+   GError *error = NULL;
+   GtkBuilder *builder = NULL;
+@@ -151,6 +152,9 @@ void lshw_ui_init(void)
+   description = GTK_WIDGET(gtk_builder_get_object( builder, "description"));
+   statusbar = GTK_WIDGET(gtk_builder_get_object( builder, "statusbar"));
+   gtk_builder_connect_signals( builder, mainwindow );
++  menubar = G_MENU_MODEL( gtk_builder_get_object( builder, "menubar"));
++  gtk_window_set_application( GTK_WINDOW( mainwindow ), app );
++  gtk_application_set_menubar( app, menubar );
+   g_object_unref( G_OBJECT( builder ) );
+ 
+   icon = g_hash_table_lookup(pixbufs, LSHW_STOCK_LOGO);
+diff --git a/src/gui/stock.h b/src/gui/stock.h
+index 58f788e..1c732df 100644
+--- a/src/gui/stock.h
++++ b/src/gui/stock.h
+@@ -45,6 +45,8 @@
+  */
+ #define LSHW_DEFAULT_ICON_SIZE        40
+ 
++typedef struct _GtkApplication GtkApplication;
++
+ void lshw_gtk_stock_init(void);
+-void lshw_ui_init(void);
++void lshw_ui_init(GtkApplication *);
+ #endif                                            /* _STOCK_H_ */
+-- 
+2.33.1
+

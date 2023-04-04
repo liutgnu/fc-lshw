@@ -1,0 +1,22 @@
+From 358e65f92dec01f13b632d1d13fb8c76e1d50ca4 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Wed, 26 Aug 2020 23:36:59 +0200
+Subject: [PATCH 37/65] Update 'docs/TODO'
+
+---
+ docs/TODO | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/docs/TODO b/docs/TODO
+index ff0f288..0b33782 100644
+--- a/docs/TODO
++++ b/docs/TODO
+@@ -9,3 +9,4 @@
+  * use MPTABLE for reporting of CPUs
+ 
+ report SSD/rotational devices: /sys/block/DEV/queue/rotational
++better handle containers
+\ No newline at end of file
+-- 
+2.33.1
+

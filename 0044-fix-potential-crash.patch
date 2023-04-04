@@ -1,0 +1,26 @@
+From ff634c9a714fe25d3394c9713929c80888c0c01d Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Sun, 10 Jan 2021 01:03:50 +0100
+Subject: [PATCH 44/65] fix potential crash
+
+cf. Github PR#47
+---
+ src/core/dmi.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/core/dmi.cc b/src/core/dmi.cc
+index d33d487..fe6ad39 100644
+--- a/src/core/dmi.cc
++++ b/src/core/dmi.cc
+@@ -1924,6 +1924,8 @@ static bool scan_dmi_sysfs(hwNode & n)
+ 
+   ifstream ep_stream(SYSFSDMI "/smbios_entry_point",
+       ifstream::in | ifstream::binary | ifstream::ate);
++  if (!ep_stream)
++    return false;
+   ifstream::pos_type ep_len = ep_stream.tellg();
+   vector < u8 > ep_buf(ep_len);
+   ep_stream.seekg(0, ifstream::beg);
+-- 
+2.33.1
+

@@ -1,0 +1,25 @@
+From 156a95e949beaaf41650134b34160d7e2bcecae6 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Sun, 10 Jan 2021 00:55:16 +0100
+Subject: [PATCH 41/65] Add JEDEC manufacturer
+
+cf. Github PR#59
+---
+ src/core/jedec.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/core/jedec.cc b/src/core/jedec.cc
+index dc7fe5e..502bd3d 100644
+--- a/src/core/jedec.cc
++++ b/src/core/jedec.cc
+@@ -17,6 +17,7 @@ static const char * jedec_id[] = {
+ 	"0500",	"Elpida",
+ 	"07",	"Hitachi",
+ 	"8007",	"Hitachi",
++	"081A",	"Xi'an UnilC Semiconductors",
+ 	"08",	"Inmos",
+ 	"8008",	"Inmos",
+ 	"0B",	"Intersil",
+-- 
+2.33.1
+

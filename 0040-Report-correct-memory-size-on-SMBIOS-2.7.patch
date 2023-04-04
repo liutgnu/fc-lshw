@@ -1,0 +1,35 @@
+From 5c4bfb1a4baae1bea11cc9f629bc48ee12e733a7 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Sun, 10 Jan 2021 00:38:10 +0100
+Subject: [PATCH 40/65] Report correct memory size on SMBIOS < 2.7
+
+Github PR#60
+---
+ src/core/dmi.cc | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/src/core/dmi.cc b/src/core/dmi.cc
+index 30b3ab3..d33d487 100644
+--- a/src/core/dmi.cc
++++ b/src/core/dmi.cc
+@@ -1567,10 +1567,13 @@ int dmiversionrev)
+ 
+ // size
+           u = data[0x0D] << 8 | data[0x0C];
+-          if(u == 0x7FFF) {
+-             unsigned long long extendsize = (data[0x1F] << 24) | (data[0x1E] << 16) | (data[0x1D] << 8) | data[0x1C];
+-             extendsize &= 0x7FFFFFFFUL;
+-             size = extendsize * 1024ULL * 1024ULL;
++          if ((dmiversionmaj > 2)
++            || ((dmiversionmaj == 2) && (dmiversionmin >= 7))) {
++             if(u == 0x7FFF) {
++                unsigned long long extendsize = (data[0x1F] << 24) | (data[0x1E] << 16) | (data[0x1D] << 8) | data[0x1C];
++                extendsize &= 0x7FFFFFFFUL;
++                size = extendsize * 1024ULL * 1024ULL;
++             }
+           }
+ 	  else
+           if (u != 0xFFFF)
+-- 
+2.33.1
+

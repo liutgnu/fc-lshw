@@ -1,0 +1,44 @@
+From 8d696376c0f044507575e933b3e438e104f3ecd2 Mon Sep 17 00:00:00 2001
+From: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+Date: Fri, 10 Jul 2020 03:40:04 +0200
+Subject: [PATCH 25/65] Remove hack which is apparently not useful anymore
+
+---
+ src/gui/stock.c | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/src/gui/stock.c b/src/gui/stock.c
+index 08675db..46dfbe7 100644
+--- a/src/gui/stock.c
++++ b/src/gui/stock.c
+@@ -89,7 +89,6 @@ lshw_gtk_stock_init(void)
+   static int stock_initted = 0;
+   GtkIconFactory *icon_factory;
+   int i;
+-  GtkWidget *win;
+ 
+   if (stock_initted)
+     return;
+@@ -101,10 +100,6 @@ lshw_gtk_stock_init(void)
+ 
+   gtk_icon_factory_add_default(icon_factory);
+ 
+-/* Er, yeah, a hack, but it works. :) */
+-  win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+-  gtk_widget_realize(win);
+-
+   for (i = 0; i < G_N_ELEMENTS(stock_icons); i++)
+   {
+     GdkPixbuf *pixbuf;
+@@ -128,8 +123,6 @@ lshw_gtk_stock_init(void)
+       }
+   }
+ 
+-  gtk_widget_destroy(win);
+-
+ /* register logo icon size */
+   gtk_icon_size_register(LSHW_ICON_SIZE_LOGO, LSHW_DEFAULT_ICON_SIZE, LSHW_DEFAULT_ICON_SIZE);
+ 
+-- 
+2.33.1
+

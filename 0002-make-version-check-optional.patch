@@ -1,21 +1,19 @@
-From 91a0c77522e928150b2d5af0cb46822d62359675 Mon Sep 17 00:00:00 2001
-From: Stewart Smith <trawets@amazon.com>
-Date: Sun, 19 Jun 2022 05:57:08 +0000
-Subject: [PATCH] Disable remote DNS lookup
+From d76afbaaf40e953243da921844cddff8185324f3 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Tue, 28 Jun 2022 10:22:38 +0200
+Subject: [PATCH 2/2] make version check optional
+
+cf. Github PR#86
 
 Rather than using an LSM such as SELinux to limit network access, or
 having to add exceptions into network monitoring, allow lshw to be built
 so that it doesn't do the DNS lookup to check for upstream version
 updates.
 
-[stewart: Edited from upstream patch removing Makefile bits as SPEC converts to CMake]
-
-Signed-off-by: Stewart Smith <trawets@amazon.com>
+Signed-off-by: Stewart Smith trawets@amazon.com
 ---
- src/Makefile        | 11 +++++++++--
- src/core/Makefile   |  6 +++++-
  src/core/version.cc |  9 ++++++++-
- 3 files changed, 22 insertions(+), 4 deletions(-)
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
 diff --git a/src/core/version.cc b/src/core/version.cc
 index 1f64b3a..ea8dd4a 100644
@@ -66,5 +64,5 @@ index 1f64b3a..ea8dd4a 100644
 +#endif
  }
 -- 
-2.32.0
+2.33.1
 

@@ -1,0 +1,96 @@
+From f914f225975bb4a146792c2b0181b8d0e01ff3a6 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Sat, 28 Mar 2020 11:54:10 +0100
+Subject: [PATCH 03/65] report CPU family/model/stepping
+
+---
+ src/core/cpuinfo.cc | 21 +++++++++++++++++++--
+ src/core/hw.cc      | 20 ++++++++++++++++++++
+ src/core/hw.h       |  1 +
+ 3 files changed, 40 insertions(+), 2 deletions(-)
+
+diff --git a/src/core/cpuinfo.cc b/src/core/cpuinfo.cc
+index 33085fd..eceb83a 100644
+--- a/src/core/cpuinfo.cc
++++ b/src/core/cpuinfo.cc
+@@ -463,6 +463,14 @@ string value)
+     }
+     if (id == "model name")
+       cpu->setProduct(value);
++    if (id == "microcode")
++      cpu->setConfig(id, stoll(value, NULL, 0));
++    if (id == "cpu family")
++      cpu->addHint(id, stoll(value, NULL, 0));
++    if (id == "model")
++      cpu->addHint(id, stoll(value, NULL, 0));
++    if (id == "stepping")
++      cpu->addHint(id, stoll(value, NULL, 0));
+ //if ((id == "cpu MHz") && (cpu->getSize() == 0))
+ //{
+ //cpu->setSize((long long) (1000000L * atof(value.c_str())));
+@@ -667,8 +675,17 @@ bool scan_cpuinfo(hwNode & n)
+   }
+ 
+   hwNode *cpu = getcpu(n, 0);
+-  if(cpu && (n.getWidth()==0))
+-    n.setWidth(cpu->getWidth());
++  if(cpu)
++  {
++    hw::value family, model, stepping;
++    family = cpu->getHint("cpu family");
++    model = cpu->getHint("model");
++    stepping = cpu->getHint("stepping");
++    if(family.defined() && model.defined() && stepping.defined())
++	    cpu->setVersion(tostring(family.asInteger())+"."+tostring(model.asInteger())+"."+tostring(stepping.asInteger()));
++    if(n.getWidth()==0)
++      n.setWidth(cpu->getWidth());
++  }
+ 
+   return true;
+ }
+diff --git a/src/core/hw.cc b/src/core/hw.cc
+index 4522c1a..a592730 100644
+--- a/src/core/hw.cc
++++ b/src/core/hw.cc
+@@ -2432,6 +2432,26 @@ string value::asString() const
+ }
+ 
+ 
++long long value::asInteger() const
++{
++  if(!This) return 0;
++
++  switch(This->type)
++  {
++    case hw::text:
++      return stoll(This->s, NULL, 0);
++    case hw::integer:
++      return This->ll;
++    case hw::boolean:
++      return This->b?1:0;
++    case hw::nil:
++      return 0;
++  };
++
++  return 0;
++}
++
++
+ bool value::defined() const
+ {
+   if(!This) return false;
+diff --git a/src/core/hw.h b/src/core/hw.h
+index 3cb782b..451e9b3 100644
+--- a/src/core/hw.h
++++ b/src/core/hw.h
+@@ -79,6 +79,7 @@ namespace hw
+       bool operator ==(const value &) const;
+ 
+       string asString() const;
++      long long asInteger() const;
+       bool defined() const;
+ 
+     private:
+-- 
+2.33.1
+

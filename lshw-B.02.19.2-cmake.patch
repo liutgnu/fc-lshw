@@ -43,7 +43,7 @@ new file mode 100644
 index 0000000..3b1d4d6
 --- /dev/null
 +++ b/CMakeLists.txt
-@@ -0,0 +1,43 @@
+@@ -0,0 +1,44 @@
 +cmake_minimum_required(VERSION 3.0)
 +
 +project(lshw)
@@ -71,6 +71,7 @@ index 0000000..3b1d4d6
 +option(NOLOGO "Don't install vendor logos" OFF)
 +option(STATIC "Do a static (will disable other features)" OFF)
 +option(POLICYKIT "Install PolicyKit file and pfexec wrapper" OFF)
++option(REMOTE_VERSION_CHECK "Enable remote version check" OFF)
 +
 +include(GNUInstallDirs)
 +set(CMAKE_INSTALL_PREFIX "/usr/local" CACHE STRING "Install prefix")
@@ -300,7 +301,7 @@ new file mode 100644
 index 0000000..8b97a16
 --- /dev/null
 +++ b/src/CMakeLists.txt
-@@ -0,0 +1,102 @@
+@@ -0,0 +1,108 @@
 +if(STATIC)
 + set(ZLIB OFF)
 + set(SQLITE OFF)
@@ -308,6 +309,7 @@ index 0000000..8b97a16
 +
 +# SQLite support
 +if(SQLITE)
++  find_package(PkgConfig REQUIRED)
 +  pkg_check_modules(SQLITE3 sqlite3)
 +  if(SQLITE3_FOUND)
 +    message("-- Enabling SQLite support")
@@ -384,7 +386,12 @@ index 0000000..8b97a16
 +  set_target_properties(lshw PROPERTIES LINK_FLAGS "-static" )
 +endif()
 +
-+target_link_libraries(lshw ${SQLITE3_LIBRARIES} ${Z_LIBRARIES} core resolv)
++if(REMOTE_VERSION_CHECK)
++  add_compile_definitions(REMOTE_VERSION_CHECK)
++  target_link_libraries(lshw ${SQLITE3_LIBRARIES} ${Z_LIBRARIES} core resolv)
++else()
++  target_link_libraries(lshw ${SQLITE3_LIBRARIES} ${Z_LIBRARIES} core)
++endif()
 +
 +if(NOT ZLIB)
 +  if(HWDATA)
@@ -734,24 +741,25 @@ new file mode 100644
 index 0000000..3489053
 --- /dev/null
 +++ b/src/gui/CMakeLists.txt
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,68 @@
 +if(NOT GUI OR STATIC)
 +  message("-- gtk-${PROJECT_NAME} disabled")
 +  return()
 +endif()
 +
 +find_package(PkgConfig)
-+pkg_check_modules(GTK2 REQUIRED gtk+-2.0 gmodule-2.0)
++pkg_check_modules(GTK3 REQUIRED gtk+-3.0 gmodule-2.0)
 +
 +file(GLOB GTK_SOURCES "*.c*")
++list(FILTER GTK_SOURCES EXCLUDE REGEX ".*support.c$")
 +
 +include_directories("${PROJECT_BINARY_DIR}")
 +include_directories("${PROJECT_SOURCE_DIR}/src/core")
 +
-+include_directories("${GTK2_INCLUDE_DIRS}")
++include_directories("${GTK3_INCLUDE_DIRS}")
 +
 +add_executable(gtk-lshw ${GTK_SOURCES})
-+target_link_libraries(gtk-lshw ${SQLITE3_LIBRARIES} ${Z_LIBRARIES} ${GTK2_LIBRARIES} core resolv)
++target_link_libraries(gtk-lshw ${SQLITE3_LIBRARIES} ${Z_LIBRARIES} ${GTK3_LIBRARIES} core resolv)
 +install(TARGETS gtk-lshw DESTINATION sbin)
 +
 +if(POLICYKIT)

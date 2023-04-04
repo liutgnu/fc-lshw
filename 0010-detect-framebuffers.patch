@@ -1,0 +1,102 @@
+From 755371fc1590e752380822ffdb320484e3b6851f Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Thu, 2 Apr 2020 14:54:03 +0200
+Subject: [PATCH 10/65] detect framebuffers
+
+---
+ src/core/graphics.cc | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ src/core/graphics.h  |  8 ++++++++
+ src/core/main.cc     |  4 ++++
+ 4 files changed, 57 insertions(+), 1 deletion(-)
+ create mode 100644 src/core/graphics.cc
+ create mode 100644 src/core/graphics.h
+
+diff --git a/src/core/graphics.cc b/src/core/graphics.cc
+new file mode 100644
+index 0000000..a8d490c
+--- /dev/null
++++ b/src/core/graphics.cc
+@@ -0,0 +1,44 @@
++#include "version.h"
++#include "hw.h"
++#include "sysfs.h"
++#include "osutils.h"
++#include "graphics.h"
++#include "heuristics.h"
++
++#include <vector>
++#include <iostream>
++
++__ID("@(#) $Id$");
++
++using namespace std;
++
++bool scan_graphics(hwNode & n)
++{
++  vector < sysfs::entry > entries = sysfs::entries_by_class("graphics");
++
++  if (entries.empty())
++    return false;
++
++  for (vector < sysfs::entry >::iterator it = entries.begin();
++      it != entries.end(); ++it)
++  {
++    const sysfs::entry & e = *it;
++    string dev = e.string_attr("dev");
++    if(dev!="")
++    {
++      hwNode *device = n.findChildByBusInfo(e.leaf().businfo());
++      if(!device)
++        device = n.addChild(hwNode("graphics", hw::display));
++      device->claim();
++      device->setLogicalName(e.name());
++      device->addCapability("fb", "framebuffer");
++      if(device->getProduct() == "") device->setProduct(e.string_attr("name"));
++      string resolution = e.string_attr("virtual_size");
++      string depth = e.string_attr("bits_per_pixel");
++      if(resolution != "") device->setConfig("resolution", resolution);
++      if(depth != "") device->setConfig("depth", depth);
++    }
++  }
++
++  return true;
++}
+diff --git a/src/core/graphics.h b/src/core/graphics.h
+new file mode 100644
+index 0000000..c30f0bf
+--- /dev/null
++++ b/src/core/graphics.h
+@@ -0,0 +1,8 @@
++#ifndef _GRAPHICS_H_
++#define _GRAPHICS_H_
++
++#include "hw.h"
++
++bool scan_graphics(hwNode &);
++
++#endif
+diff --git a/src/core/main.cc b/src/core/main.cc
+index e35258c..ac2fba0 100644
+--- a/src/core/main.cc
++++ b/src/core/main.cc
+@@ -47,6 +47,7 @@
+ #include "mmc.h"
+ #include "input.h"
+ #include "sound.h"
++#include "graphics.h"
+ #include "smp.h"
+ #include "abi.h"
+ #include "s390.h"
+@@ -145,6 +146,9 @@ bool scan_system(hwNode & system)
+     status("sound");
+     if (enabled("sound"))
+       scan_sound(computer);
++    status("graphics");
++    if (enabled("graphics"))
++      scan_graphics(computer);
+     status("input");
+     if (enabled("input"))
+       scan_input(computer);
+-- 
+2.33.1
+

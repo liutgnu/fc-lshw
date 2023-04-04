@@ -1,0 +1,141 @@
+From 1cc52cac74ea735faae92dc963d10292608d7a4d Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Thu, 2 Apr 2020 13:39:42 +0200
+Subject: [PATCH 09/65] detect sound devices
+
+---
+ src/core/main.cc  |  4 ++++
+ src/core/sound.cc | 53 +++++++++++++++++++++++++++++++++++++++++++++++
+ src/core/sound.h  |  8 +++++++
+ src/core/sysfs.cc |  5 +++++
+ src/core/sysfs.h  |  1 +
+ 6 files changed, 72 insertions(+), 1 deletion(-)
+ create mode 100644 src/core/sound.cc
+ create mode 100644 src/core/sound.h
+
+diff --git a/src/core/main.cc b/src/core/main.cc
+index ad0e586..e35258c 100644
+--- a/src/core/main.cc
++++ b/src/core/main.cc
+@@ -46,6 +46,7 @@
+ #include "nvme.h"
+ #include "mmc.h"
+ #include "input.h"
++#include "sound.h"
+ #include "smp.h"
+ #include "abi.h"
+ #include "s390.h"
+@@ -141,6 +142,9 @@ bool scan_system(hwNode & system)
+     status("MMC");
+     if (enabled("mmc"))
+       scan_mmc(computer);
++    status("sound");
++    if (enabled("sound"))
++      scan_sound(computer);
+     status("input");
+     if (enabled("input"))
+       scan_input(computer);
+diff --git a/src/core/sound.cc b/src/core/sound.cc
+new file mode 100644
+index 0000000..05edf23
+--- /dev/null
++++ b/src/core/sound.cc
+@@ -0,0 +1,53 @@
++#include "version.h"
++#include "hw.h"
++#include "sysfs.h"
++#include "osutils.h"
++#include "sound.h"
++#include "heuristics.h"
++
++#include <vector>
++#include <iostream>
++
++__ID("@(#) $Id$");
++
++using namespace std;
++
++bool scan_sound(hwNode & n)
++{
++  vector < sysfs::entry > entries = sysfs::entries_by_class("sound");
++
++  if (entries.empty())
++    return false;
++
++  for (vector < sysfs::entry >::iterator it = entries.begin();
++      it != entries.end(); ++it)
++  {
++    const sysfs::entry & e = *it;
++    string id = e.string_attr("id");
++    if(id!="")
++    {
++      hwNode *device = n.findChildByBusInfo(e.leaf().businfo());
++      if(!device)
++        device = n.addChild(hwNode("sound", hw::multimedia));
++      device->claim();
++      if(device->getDescription() == "") device->setDescription(id);
++      //device->setPhysId(e.hex_attr("number"));
++      //device->setBusInfo("sound@"+e.string_attr("number"));
++      device->setLogicalName("snd/"+e.name());
++      if(device->getProduct() == "") device->setProduct(e.string_attr("name"));
++      device->setModalias(e.modalias());
++
++      vector < sysfs::entry > events = e.devices();
++      for(vector < sysfs::entry >::iterator i = events.begin(); i != events.end(); ++i)
++      {
++        const sysfs::entry & d = *i;
++	if(d.subsystem() == "sound")
++	{
++          device->setLogicalName("snd/"+d.name());
++	}
++      }
++    }
++  }
++
++  return true;
++}
+diff --git a/src/core/sound.h b/src/core/sound.h
+new file mode 100644
+index 0000000..c2caf04
+--- /dev/null
++++ b/src/core/sound.h
+@@ -0,0 +1,8 @@
++#ifndef _SOUND_H_
++#define _SOUND_H_
++
++#include "hw.h"
++
++bool scan_sound(hwNode &);
++
++#endif
+diff --git a/src/core/sysfs.cc b/src/core/sysfs.cc
+index 32d6564..ee8b1da 100644
+--- a/src/core/sysfs.cc
++++ b/src/core/sysfs.cc
+@@ -343,6 +343,11 @@ string entry::classname() const
+   return basename(dirname(This->devpath).c_str());
+ }
+ 
++string entry::subsystem() const
++{
++  return basename(realpath(This->devpath+"/subsystem").c_str());
++}
++
+ bool entry::isvirtual() const
+ {
+   return string(basename(dirname(dirname(This->devpath)).c_str())) == "virtual";
+diff --git a/src/core/sysfs.h b/src/core/sysfs.h
+index 9cc1b2b..c25430b 100644
+--- a/src/core/sysfs.h
++++ b/src/core/sysfs.h
+@@ -26,6 +26,7 @@ namespace sysfs
+       bool hassubdir(const string &) const;
+       string name() const;
+       string classname() const;
++      string subsystem() const;
+       bool isvirtual() const;
+       string businfo() const;
+       string driver() const;
+-- 
+2.33.1
+

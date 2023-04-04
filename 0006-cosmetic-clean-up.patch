@@ -1,0 +1,27 @@
+From aea375aeb4f58a35afd1ec2998a04060bc8fccfa Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Tue, 31 Mar 2020 23:27:36 +0200
+Subject: [PATCH 06/65] cosmetic clean-up
+
+---
+ src/core/mmc.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/core/mmc.cc b/src/core/mmc.cc
+index 96c2c49..1385e11 100644
+--- a/src/core/mmc.cc
++++ b/src/core/mmc.cc
+@@ -327,8 +327,8 @@ bool scan_mmc(hwNode & n)
+     device->setDescription("MMC Host");
+     device->setModalias(e.modalias());
+ 
+-    vector < sysfs::entry > namespaces = e.devices();
+-    for(vector < sysfs::entry >::iterator i = namespaces.begin(); i != namespaces.end(); ++i)
++    vector < sysfs::entry > devices = e.devices();
++    for(vector < sysfs::entry >::iterator i = devices.begin(); i != devices.end(); ++i)
+     {
+       const sysfs::entry & d = *i;
+ 
+-- 
+2.33.1
+

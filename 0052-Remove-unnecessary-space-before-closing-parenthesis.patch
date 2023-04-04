@@ -1,0 +1,29 @@
+From dbe5708e7f3f14f13aee4b498070aab4fac45f6e Mon Sep 17 00:00:00 2001
+From: Alex Henrie <alexhenrie24@gmail.com>
+Date: Tue, 29 Jun 2021 20:47:37 -0600
+Subject: [PATCH 52/65] Remove unnecessary space before closing parenthesis
+
+Some messages had this space and others did not.
+---
+ src/lshw.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/lshw.cc b/src/lshw.cc
+index e5d6b4f..5a2d594 100644
+--- a/src/lshw.cc
++++ b/src/lshw.cc
+@@ -41,9 +41,9 @@ void usage(const char *progname)
+   fprintf(stderr, _("\t-C CLASS        same as '-class CLASS'\n"));
+   fprintf(stderr, _("\t-c CLASS        same as '-class CLASS'\n"));
+   fprintf(stderr,
+-    _("\t-disable TEST   disable a test (like pci, isapnp, cpuid, etc. )\n"));
++    _("\t-disable TEST   disable a test (like pci, isapnp, cpuid, etc.)\n"));
+   fprintf(stderr,
+-    _("\t-enable TEST    enable a test (like pci, isapnp, cpuid, etc. )\n"));
++    _("\t-enable TEST    enable a test (like pci, isapnp, cpuid, etc.)\n"));
+   fprintf(stderr, _("\t-quiet          don't display status\n"));
+   fprintf(stderr, _("\t-sanitize       sanitize output (remove sensitive information like serial numbers, etc.)\n"));
+   fprintf(stderr, _("\t-numeric        output numeric IDs (for PCI, USB, etc.)\n"));
+-- 
+2.33.1
+

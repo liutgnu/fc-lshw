@@ -1,0 +1,33 @@
+From bb82dda52da2029a527577a796daffcbc97d8e83 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Mon, 30 Mar 2020 23:36:15 +0200
+Subject: [PATCH 05/65] correctly format SMBIOS UUID
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+cf. https://en.wikipedia.org/wiki/Universally_unique_identifier (RFC 4122 Section 3 requires that the characters be generated in lower case, while being case-insensitive on input.)
+
+cf. https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf §7.2.1
+---
+ src/core/dmi.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/core/dmi.cc b/src/core/dmi.cc
+index c4c01e0..30b3ab3 100644
+--- a/src/core/dmi.cc
++++ b/src/core/dmi.cc
+@@ -195,8 +195,8 @@ static string dmi_uuid(const u8 * p)
+     return string(REMOVED);
+ 
+   snprintf(buffer, sizeof(buffer),
+-    "%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+-    p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10],
++    "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
++    p[3], p[2], p[1], p[0], p[5], p[4], p[7], p[6], p[8], p[9], p[10],
+     p[11], p[12], p[13], p[14], p[15]);
+ 
+   return hw::strip(string(buffer));
+-- 
+2.33.1
+

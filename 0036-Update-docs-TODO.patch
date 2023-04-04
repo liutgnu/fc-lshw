@@ -1,0 +1,22 @@
+From 60c906d385b933fb6f5f0f2b14bfc9ea6de43a99 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Fri, 21 Aug 2020 11:38:20 +0200
+Subject: [PATCH 36/65] Update 'docs/TODO'
+
+---
+ docs/TODO | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/docs/TODO b/docs/TODO
+index 1e74710..ff0f288 100644
+--- a/docs/TODO
++++ b/docs/TODO
+@@ -7,3 +7,5 @@
+  * use businfo to find CPUs instead of hardcoding cpu:n form
+  * use sysfs for PCMCIA access
+  * use MPTABLE for reporting of CPUs
++
++report SSD/rotational devices: /sys/block/DEV/queue/rotational
+-- 
+2.33.1
+

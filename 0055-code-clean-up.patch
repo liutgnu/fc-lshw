@@ -1,0 +1,49 @@
+From 353866cf8f9d2fff89d226598c97dfd33229fe35 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Tue, 12 Oct 2021 16:28:35 +0200
+Subject: [PATCH 55/65] code clean-up
+
+be more prudent before freeing memory
+---
+ src/core/usb.cc | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/core/usb.cc b/src/core/usb.cc
+index da65e10..7074d87 100644
+--- a/src/core/usb.cc
++++ b/src/core/usb.cc
+@@ -311,6 +311,7 @@ static bool load_usbids(const string & name)
+         buffer[linelen-1] = '\0';                 // chop \n
+       string line = string(buffer);
+       free(buffer);
++      buffer = NULL;
+ 
+       description = NULL;
+       t = 0;
+@@ -338,6 +339,7 @@ static bool load_usbids(const string & name)
+         }
+       }
+     }
++    if(buffer != NULL) free(buffer);
+   }
+ 
+   fclose(usbids);
+@@ -393,6 +395,7 @@ bool scan_usb(hwNode & n)
+     {
+       string line = hw::strip(string(buffer));
+       free(buffer);
++      buffer = NULL;
+ 
+       if(line.length()<=0)
+       {
+@@ -497,6 +500,7 @@ bool scan_usb(hwNode & n)
+         }
+       }
+     }
++    if(buffer != NULL) free(buffer);
+   }
+   if(defined)
+     addUSBChild(n, device, bus, lev, prnt);
+-- 
+2.33.1
+

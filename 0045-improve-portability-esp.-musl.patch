@@ -1,0 +1,120 @@
+From d3c66a6b2a0799d6982f4dc77b291934fcba80c9 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Sun, 10 Jan 2021 01:19:24 +0100
+Subject: [PATCH 45/65] improve portability (esp. musl)
+
+cf. Github PR#56
+---
+ src/core/abi.cc   |  4 +---
+ src/core/sysfs.cc | 21 +++++++++++----------
+ 2 files changed, 12 insertions(+), 13 deletions(-)
+
+diff --git a/src/core/abi.cc b/src/core/abi.cc
+index adff7b5..76c664c 100644
+--- a/src/core/abi.cc
++++ b/src/core/abi.cc
+@@ -20,9 +20,7 @@ __ID("@(#) $Id: mem.cc 1352 2006-05-27 23:54:13Z ezix $");
+ bool scan_abi(hwNode & system)
+ {
+   // are we compiled as 32- or 64-bit process ?
+-  long sc = sysconf(LONG_BIT);
+-  if(sc==-1) sc = sysconf(_SC_LONG_BIT);
+-  if(sc!=-1) system.setWidth(sc);
++  system.setWidth(LONG_BIT);
+ 
+   pushd(PROC_SYS);
+ 
+diff --git a/src/core/sysfs.cc b/src/core/sysfs.cc
+index 4e2df1c..d7a20c9 100644
+--- a/src/core/sysfs.cc
++++ b/src/core/sysfs.cc
+@@ -16,6 +16,7 @@
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ #include <sys/mount.h>
++#include <libgen.h>
+ 
+ 
+ __ID("@(#) $Id$");
+@@ -103,7 +104,7 @@ static string sysfs_getbustype(const string & path)
+   {
+     string devname =
+       string(fs.path + "/bus/") + string(namelist[i]->d_name) +
+-      "/devices/" + basename(path.c_str());
++      "/devices/" + basename(const_cast<char*>(path.c_str()));
+ 
+     if (samefile(devname, path))
+     {
+@@ -151,7 +152,7 @@ static string sysfstobusinfo(const string & path)
+ 
+   if (bustype == "usb")
+   {
+-    string name = basename(path.c_str());
++    string name = basename(const_cast<char*>(path.c_str()));
+     if (matches(name, "^[0-9]+-[0-9]+(\\.[0-9]+)*:[0-9]+\\.[0-9]+$"))
+     {
+       size_t colon = name.rfind(":");
+@@ -162,7 +163,7 @@ static string sysfstobusinfo(const string & path)
+ 
+   if (bustype == "virtio")
+   {
+-    string name = basename(path.c_str());
++    string name = basename(const_cast<char*>(path.c_str()));
+     if (name.compare(0, 6, "virtio") == 0)
+       return "virtio@" + name.substr(6);
+     else
+@@ -170,10 +171,10 @@ static string sysfstobusinfo(const string & path)
+   }
+ 
+   if (bustype == "vio")
+-    return string("vio@") + basename(path.c_str());
++    return string("vio@") + basename(const_cast<char*>(path.c_str()));
+ 
+   if (bustype == "ccw")
+-    return string("ccw@") + basename(path.c_str());
++    return string("ccw@") + basename(const_cast<char*>(path.c_str()));
+ 
+   if (bustype == "ccwgroup")
+   {
+@@ -251,7 +252,7 @@ string entry::driver() const
+   string driverlink = This->devpath + "/driver";
+   if (!exists(driverlink))
+     return "";
+-  return basename(readlink(driverlink).c_str());
++  return basename(const_cast<char*>(readlink(driverlink).c_str()));
+ }
+ 
+ 
+@@ -339,7 +340,7 @@ string entry::name_in_class(const string & classname) const
+ 
+ string entry::name() const
+ {
+-  return basename(This->devpath.c_str());
++  return basename(const_cast<char*>(This->devpath.c_str()));
+ }
+ 
+ 
+@@ -351,17 +352,17 @@ entry entry::parent() const
+ 
+ string entry::classname() const
+ {
+-  return basename(dirname(This->devpath).c_str());
++  return basename(const_cast<char*>(dirname(This->devpath).c_str()));
+ }
+ 
+ string entry::subsystem() const
+ {
+-  return basename(realpath(This->devpath+"/subsystem").c_str());
++  return basename(const_cast<char*>(realpath(This->devpath+"/subsystem").c_str()));
+ }
+ 
+ bool entry::isvirtual() const
+ {
+-  return string(basename(dirname(dirname(This->devpath)).c_str())) == "virtual";
++  return string(basename(const_cast<char*>(dirname(dirname(This->devpath)).c_str()))) == "virtual";
+ }
+ 
+ string entry::string_attr(const string & name, const string & def) const
+-- 
+2.33.1
+

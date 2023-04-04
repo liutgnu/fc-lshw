@@ -1,0 +1,40 @@
+From 9bf4e4c9c1bc90eee01bf26799afe64008bf5d70 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Thu, 10 Mar 2022 00:08:09 +0100
+Subject: [PATCH 1/2] Github PR85  Set product name for all netdevs sharing the
+ same PCI number
+
+Some network drivers can create multiple netdevs with the same PCI number
+(bus info), e.g. in case of port representors in switchdev mode. In this
+case, lshw displays the PCI branding string as description only for the
+first netdev (lshw -c net -businfo). The remaining netdevs with the same
+PCI number get a generic description ("Ethernet interface"). Moreover, the
+decision which one of the netdevs gets the PCI branding string is not
+deterministic, as it depends on the order of netdevs in /proc/net/dev file.
+
+With this change, all netdevs sharing the same PCI number will get the same
+description, taken from PCI branding string.
+
+Signed-off-by: Marcin Szycik marcin.szycik@intel.com
+---
+ src/core/network.cc | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/core/network.cc b/src/core/network.cc
+index 746ac1b..4f58ad5 100644
+--- a/src/core/network.cc
++++ b/src/core/network.cc
+@@ -813,6 +813,10 @@ bool scan_network(hwNode & n)
+ 
+       existing = n.findChildByBusInfo(interface.getBusInfo());
+       // Multiple NICs can exist on one PCI function.
++
++      if (existing && !existing->getBusInfo().empty() && (interface.getBusInfo() == existing->getBusInfo()) && interface.getProduct().empty())
++        interface.setProduct(existing->getProduct());
++
+       // Only merge if MACs also match.
+       if (existing && (existing->getSerial() == "" || interface.getSerial() == existing->getSerial()))
+       {
+-- 
+2.33.1
+

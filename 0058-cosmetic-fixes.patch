@@ -1,0 +1,135 @@
+From 62d96b016b04219e76e2de2f5dd585c7bbdae9c1 Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Tue, 12 Oct 2021 23:35:54 +0200
+Subject: [PATCH 58/65] cosmetic fixes
+
+Github PR#71
+---
+ README.md         |  4 ++--
+ docs/Changelog    | 12 ++++++------
+ docs/TODO         |  2 +-
+ lshw.spec.in      |  2 +-
+ src/Makefile      |  2 +-
+ src/core/Makefile |  2 +-
+ src/core/dmi.cc   |  6 +++---
+ src/gui/Makefile  |  2 +-
+ src/po/Makefile   |  2 +-
+ 9 files changed, 17 insertions(+), 17 deletions(-)
+
+diff --git a/README.md b/README.md
+index 6659f9c..0c610f5 100644
+--- a/README.md
++++ b/README.md
+@@ -42,7 +42,7 @@ Getting help
+ 
+  1. the lshw home page is http://lshw.ezix.org/
+  2. bug reports and feature requests: http://ezix.org/project/newticket?component=lshw
+- 
++
+    Please make sure you include enough information in your bug report: XML output from lshw is preferred over text or HTML, indicate the affected version of lshw, your platform (i386, x86-64, PA-RISC, PowerPC, etc.) and your distribution.
+ 
+ NOTE TO DISTRIBUTIONS
+diff --git a/docs/Changelog b/docs/Changelog
+index 6ea288c..0f648f5 100644
+--- a/docs/Changelog
++++ b/docs/Changelog
+@@ -3,17 +3,17 @@
+   detection of SD/MMC and SDIO devices
+   bug fixes
+   code cleanup
+-  updated data files 
++  updated data files
+ * lshw B.02.18
+   migrated to git
+   bug fixes
+   code cleanup
+-  updated data files 
++  updated data files
+ * lshw B.02.17
+   bug fixes
+   code cleanup
+   improved support for FAT-formatted disks
+-  updated data files 
++  updated data files
+ * lshw B.02.16
+   bug fixes
+   code cleanup
+@@ -27,7 +27,7 @@
+   updated data files
+ * lshw B.02.14
+   bug fixes
+-  support for EXT4 partitions 
++  support for EXT4 partitions
+ * lshw B.02.13
+   fix bug #402: properly detect 64 bit systems (even when compiled for i386)
+   fix bug #401: SMP-related crash on IA-64
+@@ -70,7 +70,7 @@
+ * lshw B.02.09
+   minor bugfixes (#26, #27)
+   added support for PCI domains (#28)
+-  use of /sys (sysfs) when possible for PCI devices 
++  use of /sys (sysfs) when possible for PCI devices
+ *  B.02.08.01
+   bugfix release for non-x86 platforms (#24)
+ *  B.02.08
+@@ -99,7 +99,7 @@
+   the GUI now uses a GtkTextView instead of a GtkLabel
+   SVG icons are now displayed for USB, Firewire, SCSI, etc.
+   added support for reporting VMX (Vanderpool) capabilities (untested)
+-  fixed a compilation problem with GCC 4 
++  fixed a compilation problem with GCC 4
+ *  B.02.03
+   added support for PA-RISC devices (IODC-controlled) on 2.6 kernels
+   the GUI can now be launched by invoking lshw with the '-X' option
+diff --git a/docs/TODO b/docs/TODO
+index 0b33782..2d4d3af 100644
+--- a/docs/TODO
++++ b/docs/TODO
+@@ -9,4 +9,4 @@
+  * use MPTABLE for reporting of CPUs
+ 
+ report SSD/rotational devices: /sys/block/DEV/queue/rotational
+-better handle containers
+\ No newline at end of file
++better handle containers
+diff --git a/lshw.spec.in b/lshw.spec.in
+index f6884ab..b3b636f 100644
+--- a/lshw.spec.in
++++ b/lshw.spec.in
+@@ -35,7 +35,7 @@ Requires: gtk3 >= 3.24
+ BuildRequires: gtk3-devel >= 3.24
+ 
+ %description gui
+-lshw (Hardware Lister) is a small tool to provide detailed informaton on
++lshw (Hardware Lister) is a small tool to provide detailed information on
+ the hardware configuration of the machine. It can report exact memory
+ configuration, firmware version, mainboard configuration, CPU version
+ and speed, cache configuration, bus speed, etc. on DMI-capable x86s
+diff --git a/src/core/dmi.cc b/src/core/dmi.cc
+index df5db6b..6d76c53 100644
+--- a/src/core/dmi.cc
++++ b/src/core/dmi.cc
+@@ -1648,9 +1648,9 @@ int dmiversionrev)
+                     uint64_t(data[0x1C]) << 40 | uint64_t(data[0x1B]) << 32 |
+                     uint64_t(data[0x1A]) << 24 | uint64_t(data[0x19]) << 16 |
+                     uint64_t(data[0x18]) << 8 | uint64_t(data[0x17]);
+-          if (end - start < 512)                  // memory range is smaller thant 512KB
++          if (end - start < 512)                  // memory range is smaller than 512KB
+           {
+-// consider that values were expressed in megagytes
++// consider that values were expressed in megabytes
+             start *= 1024;
+             end *= 1024;
+           }
+@@ -1688,7 +1688,7 @@ int dmiversionrev)
+                     uint64_t(data[0x18]) << 8 | uint64_t(data[0x17]);
+           if (end - start < 512)                  // memory range is smaller than 512KB
+           {
+-// consider that values were expressed in megagytes
++// consider that values were expressed in megabytes
+             start *= 1024;
+             end *= 1024;
+           }
+-- 
+2.33.1
+

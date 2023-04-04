@@ -1,0 +1,149 @@
+From 71cf63b7bb7bb212580cc7c8e6c75a4f645d79f1 Mon Sep 17 00:00:00 2001
+From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+Date: Wed, 20 May 2020 06:27:05 -0500
+Subject: [PATCH 22/65] Fix few memory leaks
+
+Valgrind showed some leaks with scandir usage in sysfs.cc.
+Patch audits all the scandir usage and fixes where required.
+
+Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+---
+ src/core/parisc.cc | 10 ++++++----
+ src/core/spd.cc    |  4 ++++
+ src/core/sysfs.cc  | 32 ++++++++++++++++++++++++++++----
+ 3 files changed, 38 insertions(+), 8 deletions(-)
+
+diff --git a/src/core/parisc.cc b/src/core/parisc.cc
+index 80344d2..1e531e3 100644
+--- a/src/core/parisc.cc
++++ b/src/core/parisc.cc
+@@ -561,11 +561,13 @@ static bool scan_device(hwNode & node, string name = "")
+   else
+   {
+     for (int i = 0; i < n; i++)
+-      if(matches(namelist[i]->d_name, "^[0-9]+(:[0-9]+)*$"))
+     {
+-      pushd(namelist[i]->d_name);
+-      scan_device(curnode?*curnode:node, namelist[i]->d_name);
+-      popd();
++      if(matches(namelist[i]->d_name, "^[0-9]+(:[0-9]+)*$"))
++      {
++        pushd(namelist[i]->d_name);
++        scan_device(curnode?*curnode:node, namelist[i]->d_name);
++        popd();
++      }
+       free(namelist[i]);
+     }
+     free(namelist);
+diff --git a/src/core/spd.cc b/src/core/spd.cc
+index 061d0fd..a304d06 100644
+--- a/src/core/spd.cc
++++ b/src/core/spd.cc
+@@ -192,8 +192,12 @@ static bool scan_eeproms(hwNode & memory)
+     return false;
+ 
+   for (int i = 0; i < n; i++)
++  {
+     if (scan_eeprom(memory, namelist[i]->d_name))
+       current_bank++;
++    free(namelist[i]);
++  }
++  free(namelist);
+ 
+   return true;
+ }
+diff --git a/src/core/sysfs.cc b/src/core/sysfs.cc
+index ee8b1da..4e2df1c 100644
+--- a/src/core/sysfs.cc
++++ b/src/core/sysfs.cc
+@@ -83,7 +83,7 @@ static string sysfs_getbustype(const string & path)
+ {
+   struct dirent **namelist;
+   int i, n;
+-  string devname;
++  string bustype = "";
+ 
+ /*
+   to determine to which kind of bus a device is connected:
+@@ -96,17 +96,28 @@ static string sysfs_getbustype(const string & path)
+   n = scandir(".", &namelist, selectdir, alphasort);
+   popd();
+ 
++  if (n <= 0)
++    return "";
++
+   for (i = 0; i < n; i++)
+   {
+-    devname =
++    string devname =
+       string(fs.path + "/bus/") + string(namelist[i]->d_name) +
+       "/devices/" + basename(path.c_str());
+ 
+     if (samefile(devname, path))
+-      return string(namelist[i]->d_name);
++    {
++      bustype = string(namelist[i]->d_name);
++      break;
++    }
++    free(namelist[i]);
+   }
+ 
+-  return "";
++  for (int j = i; j < n; j++)
++    free(namelist[j]);
++  free(namelist);
++
++  return bustype;
+ }
+ 
+ 
+@@ -405,7 +416,11 @@ vector < entry > entry::devices() const
+     entry e = sysfs::entry(This->devpath + "/" + string(namelist[i]->d_name));
+     if(e.hassubdir("subsystem"))
+ 	    result.push_back(e);
++    free(namelist[i]);
+   }
++  if (namelist)
++    free(namelist);
++
+   if(pushd("block"))
+   {
+     int count = scandir(".", &namelist, selectdir, alphasort);
+@@ -414,7 +429,10 @@ vector < entry > entry::devices() const
+       entry e = sysfs::entry(This->devpath + "/block/" + string(namelist[i]->d_name));
+       if(e.hassubdir("subsystem"))
+ 	      result.push_back(e);
++      free(namelist[i]);
+     }
++    if (namelist)
++      free(namelist);
+     popd();
+   }
+   popd();
+@@ -435,8 +453,11 @@ vector < entry > sysfs::entries_by_bus(const string & busname)
+   {
+     entry e = sysfs::entry::byBus(busname, namelist[i]->d_name);
+     result.push_back(e);
++    free(namelist[i]);
+   }
+   popd();
++  if (namelist)
++    free(namelist);
+   return result;
+ }
+ 
+@@ -454,8 +475,11 @@ vector < entry > sysfs::entries_by_class(const string & classname)
+   {
+     entry e = sysfs::entry::byClass(classname, namelist[i]->d_name);
+     result.push_back(e);
++    free(namelist[i]);
+   }
+   popd();
++  if (namelist)
++    free(namelist);
+   return result;
+ }
+ 
+-- 
+2.33.1
+

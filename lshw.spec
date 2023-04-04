@@ -5,29 +5,94 @@
 Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.19.2
-Release:       9%{?dist}
+Release:       10%{?dist}
 License:       GPLv2
 URL:           http://ezix.org/project/wiki/HardwareLiSter
 Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
 Source1:       https://salsa.debian.org/openstack-team/third-party/lshw/raw/debian/stein/debian/patches/lshw-gtk.1
 Patch1:        lshw-B.02.18-scandir.patch
-Patch3:        lshw-B.02.18-revert-json.patch
 Patch4:        lshw-B.02.19.2-cmake.patch
-Patch5:        https://build.opensuse.org/package/view_file/hardware/lshw/lshw-fix-mmc.patch
-Patch6:        https://build.opensuse.org/package/view_file/hardware/lshw/lshw-fix-segfault-in-apfs-volume-code.patch
-Patch7:        1000-disable-remote-dns-lookup.patch
+Patch9: 	0003-report-CPU-family-model-stepping.patch
+Patch10:	0004-move-PnP-devices-to-the-ISA-LPC-bridge.patch
+Patch11:	0005-correctly-format-SMBIOS-UUID.patch
+Patch12:	0006-cosmetic-clean-up.patch
+Patch13:	0007-begin-work-on-input-devices.patch
+Patch14:	0008-cosmetic-fixes.patch
+Patch15:	0009-detect-sound-devices.patch
+Patch16:	0010-detect-framebuffers.patch
+Patch17:	0011-try-to-connect-input-devices-to-the-right-parent.patch
+Patch18:	0012-devtree-Add-chip-id-from-the-dimm-module.patch
+Patch19:	0013-devtree-Add-chip-id-from-CPU-node.patch
+Patch20:	0014-volumes-fix-segfault-in-apfs-volume-code.patch
+Patch21:	0015-merge-Github-PR-53.patch
+Patch22:	0016-devtree-Add-capabilites-to-the-OPAL-Firmware.patch
+Patch23:	0017-fix-issue-with-logical-names-being-truncated-dev-sda.patch
+Patch24:	0018-code-clean-up-for-read-3.patch
+Patch25:	0019-JSON-output-clean-up-list-object.patch
+Patch26:	0020-clean-up-JSON-output.patch
+Patch27:	0021-report-product-model-on-Power-systems.patch
+Patch28:	0022-Fix-few-memory-leaks.patch
+Patch29:	0023-Build-against-gtk3-instead-of-gtk2.patch
+Patch30:	0024-Remove-deprecated-stock-messages.patch
+Patch31:	0025-Remove-hack-which-is-apparently-not-useful-anymore.patch
+Patch32:	0026-Use-GtkFileChooserNative-instead-of-GtkFileChooserDi.patch
+Patch33:	0027-Replace-deprecated-GtkIconFactory-with-GHashTable.patch
+Patch34:	0028-Replace-the-last-GtkStock-in-overwrite-dialog.patch
+Patch35:	0029-Remove-deprecated-widgets.patch
+Patch36:	0030-Remove-deprecated-use_action_appearance-property.patch
+Patch37:	0031-Move-to-GtkApplication.patch
+Patch38:	0032-Replace-signals-with-GSimpleActions.patch
+Patch39:	0033-Enable-Disable-GSimpleAction-instead-of-button-sensi.patch
+Patch40:	0034-Move-from-GtkMenuBar-to-GMenu.patch
+Patch41:	0035-Replace-the-about-GtkDialog-with-a-GtkAboutDialog.patch
+Patch42:	0036-Update-docs-TODO.patch
+Patch43:	0037-Update-docs-TODO.patch
+Patch44:	0038-update-man-page.patch
+Patch45:	0039-fix-man-page-after-previous-update.patch
+Patch46:	0040-Report-correct-memory-size-on-SMBIOS-2.7.patch
+Patch47:	0041-Add-JEDEC-manufacturer.patch
+Patch48:	0042-Avoid-crash-on-device-tree-parsing.patch
+#Patch49:	0043-add-static-target-to-Makefile.patch
+Patch50:	0044-fix-potential-crash.patch
+Patch51:	0045-improve-portability-esp.-musl.patch
+Patch52:	0046-code-clean-up.patch
+Patch53:	0047-devtree-Add-UUID-property.patch
+Patch54:	0048-Fix-getting-size-of-memory-banks-32GiB.patch
+Patch55:	0049-Fix-typos-in-translatable-messages.patch
+Patch56:	0050-Fix-another-typo.patch
+Patch57:	0051-Translate-all-words-of-a-phrase-together.patch
+Patch58:	0052-Remove-unnecessary-space-before-closing-parenthesis.patch
+#Patch59:	0053-allow-pkg-config-override.patch
+#Patch60:	0054-allow-pkg-config-override.patch
+Patch61:	0055-code-clean-up.patch
+Patch62:	0056-code-clean-up.patch
+Patch63:	0057-support-for-new-ethtool-capabilities.patch
+Patch64:	0058-cosmetic-fixes.patch
+Patch65:	0059-fix-typo.patch
+Patch66:	0060-add-some-includes.patch
+Patch67:	0061-Add-more-network-speeds.patch
+Patch68:	0062-Update-POT-file.patch
+Patch69:	0063-Add-Catalan-translation.patch
+#Patch70:	0064-use-max-9-Gzip-compression.patch
+Patch71:	0065-merge-Github-PR-77.patch
+Patch72:	0066-Fix-mistakes-in-Catalan-translation.patch
+Patch73:	0067-Add-Spanish-translation.patch
+Patch74:	0001-Github-PR85-Set-product-name-for-all-netdevs-sharing.patch
+Patch75:	0002-make-version-check-optional.patch
 BuildRequires: cmake
 BuildRequires: desktop-file-utils
 BuildRequires: gcc
 BuildRequires: gcc-c++
 BuildRequires: gettext
 %if %{with gui}
-BuildRequires: gtk2-devel >= 2.4
+BuildRequires: gtk3-devel >= 3.24
 BuildRequires: libappstream-glib
 %endif
 BuildRequires: ninja-build
 BuildRequires: python3-devel
+BuildRequires: sqlite-devel
 Requires:      hwdata
+Requires:      sqlite-libs
 %description
 lshw is a small tool to provide detailed informaton on the hardware
 configuration of the machine. It can report exact memory
@@ -51,12 +116,74 @@ format.
 %prep
 %setup -q
 %patch01 -p1
-%patch03 -R -p1
 %patch04 -p1
-%patch05 -p1
-%patch06 -p1
-# This patch #ifdefs out the remote DNS lookup that `lshw -version` does.
-%patch07 -p1
+%patch9 -p1
+%patch10 -p1
+%patch11 -p1
+%patch12 -p1
+%patch13 -p1
+%patch14 -p1
+%patch15 -p1
+%patch16 -p1
+%patch17 -p1
+%patch18 -p1
+%patch19 -p1
+%patch20 -p1
+%patch21 -p1
+%patch22 -p1
+%patch23 -p1
+%patch24 -p1
+%patch25 -p1
+%patch26 -p1
+%patch27 -p1
+%patch28 -p1
+%patch29 -p1
+%patch30 -p1
+%patch31 -p1
+%patch32 -p1
+%patch33 -p1
+%patch34 -p1
+%patch35 -p1
+%patch36 -p1
+%patch37 -p1
+%patch38 -p1
+%patch39 -p1
+%patch40 -p1
+%patch41 -p1
+%patch42 -p1
+%patch43 -p1
+%patch44 -p1
+%patch45 -p1
+%patch46 -p1
+%patch47 -p1
+%patch48 -p1
+#%patch49 -p1 changes only on Makefile, not needed
+%patch50 -p1
+%patch51 -p1
+%patch52 -p1
+%patch53 -p1
+%patch54 -p1
+%patch55 -p1
+%patch56 -p1
+%patch57 -p1
+%patch58 -p1
+#%patch59 -p1 changes only on src/Makefile, not needed
+#%patch60 -p1 changes only on src/gui/Makefile, not needed
+%patch61 -p1
+%patch62 -p1
+%patch63 -p1
+%patch64 -p1
+%patch65 -p1
+%patch66 -p1
+%patch67 -p1
+%patch68 -p1
+%patch69 -p1
+#%patch70 -p1 changes only on src/Makefile, not needed
+%patch71 -p1
+%patch72 -p1
+%patch73 -p1
+%patch74 -p1
+%patch75 -p1
 
 %build
 %if %{with gui}
@@ -65,7 +192,7 @@ format.
 %global gui_config -DGUI=OFF
 %endif
 
-%cmake -DNOLOGO=ON -DHWDATA=OFF -DPOLICYKIT=ON -DBUILD_SHARED_LIBS=OFF %{gui_config} -GNinja
+%cmake -DNOLOGO=ON -DHWDATA=OFF -DPOLICYKIT=ON -DSQLITE=ON -DBUILD_SHARED_LIBS=OFF %{gui_config} -GNinja
 %cmake_build
 
 %install
@@ -76,7 +203,7 @@ ln -s gtk-lshw %{buildroot}%{_sbindir}/lshw-gui
 %endif
 # translations seems borken, remove for now
 #find_lang %{name}
-rm -rf %{buildroot}%{_datadir}/locale/fr/
+rm -rf %{buildroot}%{_datadir}/locale/*/
 
 %check
 %if %{with gui}
@@ -114,6 +241,9 @@ appstream-util validate-relax --nonet %{buildroot}/%{_datadir}/appdata/*.appdata
 %endif
 
 %changelog
+* Tue Apr 04 2023 Yaakov Selkowitz <yselkowi@redhat.com> - B.02.19.2-10
+- Update to upstream commit 76afbaaf40e
+
 * Thu Jan 19 2023 Fedora Release Engineering <releng@fedoraproject.org> - B.02.19.2-9
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_38_Mass_Rebuild
 

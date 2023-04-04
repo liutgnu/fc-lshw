@@ -1,0 +1,27 @@
+From 2017dad4e66ec7c9e6b25d551c6867107b958ddd Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Sun, 10 Jan 2021 00:57:48 +0100
+Subject: [PATCH 42/65] Avoid crash on device-tree parsing
+
+cf. Github PR#58
+---
+ src/core/device-tree.cc | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/core/device-tree.cc b/src/core/device-tree.cc
+index 027ad16..d3188c6 100644
+--- a/src/core/device-tree.cc
++++ b/src/core/device-tree.cc
+@@ -1506,7 +1506,8 @@ bool scan_device_tree(hwNode & n)
+         scan_devtree_cpu_power(*core);
+       }
+       else {
+-        scan_devtree_cpu(*core);
++        if (exists(DEVICETREE "/cpus"))
++          scan_devtree_cpu(*core);
+       }
+       scan_devtree_memory(*core);
+       scan_devtree_memory_ibm(*core);
+-- 
+2.33.1
+

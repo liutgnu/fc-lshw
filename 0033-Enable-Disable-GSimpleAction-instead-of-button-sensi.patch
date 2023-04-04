@@ -1,0 +1,153 @@
+From a116b319adf51d4eafcb264de027647244340708 Mon Sep 17 00:00:00 2001
+From: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+Date: Wed, 15 Jul 2020 17:32:45 +0200
+Subject: [PATCH 33/65] Enable/Disable GSimpleAction instead of button
+ sensitivity
+
+This also fixes the Save menu item not having been disabled properly.
+---
+ src/gui/engine.cc   | 24 +++++++-----------------
+ src/gui/gtk-lshw.c  |  7 +++++++
+ src/gui/gtk-lshw.ui |  2 --
+ src/gui/stock.c     |  4 ----
+ 4 files changed, 14 insertions(+), 23 deletions(-)
+
+diff --git a/src/gui/engine.cc b/src/gui/engine.cc
+index ff06074..2962ec8 100644
+--- a/src/gui/engine.cc
++++ b/src/gui/engine.cc
+@@ -37,10 +37,10 @@ static hwNode *selected3 = NULL;
+ extern GtkWidget *mainwindow;
+ extern GtkWidget *list1, *list2, *list3;
+ extern GtkWidget *description;
+-extern GtkWidget *go_up_button;
+-extern GtkWidget *save_button;
+ extern GtkWidget *statusbar;
+ extern GHashTable *pixbufs;
++extern GSimpleAction *go_up_action;
++extern GSimpleAction *save_action;
+ 
+ enum
+ {
+@@ -251,14 +251,11 @@ void refresh(GtkWidget *mainwindow)
+ {
+   hwNode computer("computer", hw::system);
+   static bool lock = false;
+-  //GtkWidget * menu = lookup_widget(mainwindow, "menu");
+-  //GtkWidget * save_menuitem = lookup_widget(menu, "save");
+ 
+   if(lock) return;
+ 
+   lock = true;
+-  gtk_widget_set_sensitive(save_button, FALSE);
+-  //gtk_widget_set_sensitive(save_menuitem, FALSE);
++  g_simple_action_set_enabled(save_action, FALSE);
+ 
+   populate_sublist(list1, NULL);
+   populate_sublist(list2, NULL);
+@@ -273,9 +270,8 @@ void refresh(GtkWidget *mainwindow)
+   status(NULL);
+   displayed = container.addChild(computer);
+ 
+-  gtk_widget_set_sensitive(go_up_button, FALSE);
+-  gtk_widget_set_sensitive(save_button, TRUE);
+-  //gtk_widget_set_sensitive(save_menuitem, TRUE);
++  g_simple_action_set_enabled(go_up_action, FALSE);
++  g_simple_action_set_enabled(save_action, TRUE);
+ 
+   selected1 = NULL;
+   selected2 = NULL;
+@@ -379,10 +375,7 @@ void browse(unsigned list, GtkTreeView *treeview)
+       break;
+   }
+ 
+-  if(selected1 && (find_parent(selected1, &container)!= &container))
+-    gtk_widget_set_sensitive(go_up_button, 1);
+-  else
+-    gtk_widget_set_sensitive(go_up_button, 0);
++  g_simple_action_set_enabled(go_up_action, selected1 && (find_parent(selected1, &container)!= &container));
+ 
+   (void) &::id;                                   // avoid warning "id defined but not used"
+ }
+@@ -404,10 +397,7 @@ void go_back(GtkWidget *mainwindow)
+       displayed = find_parent(displayed, &container);
+   }
+ 
+-  if(selected1 && (find_parent(selected1, &container)!= &container))
+-    gtk_widget_set_sensitive(go_up_button, 1);
+-  else
+-    gtk_widget_set_sensitive(go_up_button, 0);
++  g_simple_action_set_enabled(go_up_action, selected1 && (find_parent(selected1, &container)!= &container));
+ 
+   display(mainwindow);
+ }
+diff --git a/src/gui/gtk-lshw.c b/src/gui/gtk-lshw.c
+index 0dc3aff..7b91ec5 100644
+--- a/src/gui/gtk-lshw.c
++++ b/src/gui/gtk-lshw.c
+@@ -11,6 +11,8 @@
+ static char *id = "@(#) $Id$";
+ 
+ extern GtkWidget *mainwindow;
++GSimpleAction *go_up_action;
++GSimpleAction *save_action;
+ 
+ static GActionEntry app_entries[] =
+ {
+@@ -48,6 +50,11 @@ activate (GApplication *app,
+   g_action_map_add_action_entries (G_ACTION_MAP (app),
+                                    app_entries, G_N_ELEMENTS (app_entries),
+                                    app);
++  go_up_action = G_SIMPLE_ACTION (g_action_map_lookup_action (G_ACTION_MAP (app), "go_up"));
++  save_action = G_SIMPLE_ACTION (g_action_map_lookup_action (G_ACTION_MAP (app), "save"));
++
++  g_simple_action_set_enabled(go_up_action, FALSE);
++  g_simple_action_set_enabled(save_action, FALSE);
+ 
+   lshw_gtk_stock_init();
+   lshw_ui_init();
+diff --git a/src/gui/gtk-lshw.ui b/src/gui/gtk-lshw.ui
+index d24e05c..76fcd19 100644
+--- a/src/gui/gtk-lshw.ui
++++ b/src/gui/gtk-lshw.ui
+@@ -222,7 +222,6 @@
+             <child>
+               <object class="GtkToolButton" id="upbutton">
+                 <property name="visible">True</property>
+-                <property name="sensitive">False</property>
+                 <property name="can_focus">False</property>
+                 <property name="stock_id">gtk-go-up</property>
+                 <property name="action_name">app.go_up</property>
+@@ -248,7 +247,6 @@
+             <child>
+               <object class="GtkToolButton" id="savebutton">
+                 <property name="visible">True</property>
+-                <property name="sensitive">False</property>
+                 <property name="can_focus">False</property>
+                 <property name="stock_id">gtk-save</property>
+                 <property name="action_name">app.save</property>
+diff --git a/src/gui/stock.c b/src/gui/stock.c
+index 9e7c366..fa18f9e 100644
+--- a/src/gui/stock.c
++++ b/src/gui/stock.c
+@@ -13,8 +13,6 @@ GtkWidget *list1 = NULL;
+ GtkWidget *list2 = NULL;
+ GtkWidget *list3 = NULL;
+ GtkWidget *description = NULL;
+-GtkWidget *go_up_button = NULL;
+-GtkWidget *save_button = NULL;
+ GtkWidget *statusbar = NULL;
+ GHashTable *pixbufs = NULL;
+ 
+@@ -151,8 +149,6 @@ void lshw_ui_init(void)
+   list2 = GTK_WIDGET(gtk_builder_get_object( builder, "treeview2"));
+   list3 = GTK_WIDGET(gtk_builder_get_object( builder, "treeview3"));
+   description = GTK_WIDGET(gtk_builder_get_object( builder, "description"));
+-  go_up_button = GTK_WIDGET(gtk_builder_get_object( builder, "upbutton"));
+-  save_button = GTK_WIDGET(gtk_builder_get_object( builder, "savebutton"));
+   statusbar = GTK_WIDGET(gtk_builder_get_object( builder, "statusbar"));
+   gtk_builder_connect_signals( builder, mainwindow );
+   g_object_unref( G_OBJECT( builder ) );
+-- 
+2.33.1
+

@@ -1,0 +1,58 @@
+From 89759485f86a48526b4f508a10f7478c76a3f71e Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Fri, 15 May 2020 16:00:08 +0200
+Subject: [PATCH 15/65] merge Github PR #53
+
+---
+ src/core/cpuinfo.cc | 21 ++++++++++-----------
+ 1 file changed, 10 insertions(+), 11 deletions(-)
+
+diff --git a/src/core/cpuinfo.cc b/src/core/cpuinfo.cc
+index eceb83a..49f3052 100644
+--- a/src/core/cpuinfo.cc
++++ b/src/core/cpuinfo.cc
+@@ -446,6 +446,7 @@ string value)
+ 
+   if (cpu)
+   {
++    hw::value family, model, stepping;
+ 
+ // x86 CPUs are assumed to be 32 bits per default
+     if(cpu->getWidth()==0) cpu->setWidth(32);
+@@ -471,6 +472,13 @@ string value)
+       cpu->addHint(id, stoll(value, NULL, 0));
+     if (id == "stepping")
+       cpu->addHint(id, stoll(value, NULL, 0));
++
++    family = cpu->getHint("cpu family");
++    model = cpu->getHint("model");
++    stepping = cpu->getHint("stepping");
++    if(family.defined() && model.defined() && stepping.defined())
++            cpu->setVersion(tostring(family.asInteger())+"."+tostring(model.asInteger())+"."+tostring(stepping.asInteger()));
++
+ //if ((id == "cpu MHz") && (cpu->getSize() == 0))
+ //{
+ //cpu->setSize((long long) (1000000L * atof(value.c_str())));
+@@ -675,17 +683,8 @@ bool scan_cpuinfo(hwNode & n)
+   }
+ 
+   hwNode *cpu = getcpu(n, 0);
+-  if(cpu)
+-  {
+-    hw::value family, model, stepping;
+-    family = cpu->getHint("cpu family");
+-    model = cpu->getHint("model");
+-    stepping = cpu->getHint("stepping");
+-    if(family.defined() && model.defined() && stepping.defined())
+-	    cpu->setVersion(tostring(family.asInteger())+"."+tostring(model.asInteger())+"."+tostring(stepping.asInteger()));
+-    if(n.getWidth()==0)
+-      n.setWidth(cpu->getWidth());
+-  }
++  if(cpu && (n.getWidth()==0))
++    n.setWidth(cpu->getWidth());
+ 
+   return true;
+ }
+-- 
+2.33.1
+

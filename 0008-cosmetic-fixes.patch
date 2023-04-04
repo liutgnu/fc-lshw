@@ -1,0 +1,34 @@
+From 7edaa09faa5755e44f2c6226f3447536658300af Mon Sep 17 00:00:00 2001
+From: Lyonel Vincent <lyonel@ezix.org>
+Date: Thu, 2 Apr 2020 13:21:58 +0200
+Subject: [PATCH 08/65] cosmetic fixes
+
+---
+ src/core/input.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/core/input.cc b/src/core/input.cc
+index 1f14fa9..a8d8eaf 100644
+--- a/src/core/input.cc
++++ b/src/core/input.cc
+@@ -79,7 +79,7 @@ bool scan_input(hwNode & n)
+ 	      device->addCapability("hil", "HP-HIL");
+ 	      break;
+       case BUS_BLUETOOTH:
+-	      device->addCapability("bt", "Bluetooth");
++	      device->addCapability("bluetooth", "Bluetooth");
+ 	      break;
+       case BUS_VIRTUAL:
+ 	      device->addCapability("virtual");
+@@ -112,7 +112,7 @@ bool scan_input(hwNode & n)
+ 	      device->addCapability("i2c", "I²C bus");
+ 	      break;
+       case BUS_HOST:
+-	      device->addCapability("host");
++	      device->addCapability("platform");
+ 	      break;
+       case BUS_GSC:
+ 	      device->addCapability("gsc", "GSC bus");
+-- 
+2.33.1
+
