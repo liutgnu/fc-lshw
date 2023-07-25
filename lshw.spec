@@ -6,7 +6,7 @@ Summary:       Hardware lister
 Name:          lshw
 Version:       B.02.19.2
 Release:       12%{?dist}
-License:       GPLv2
+License:       GPL-2.0-only
 URL:           http://ezix.org/project/wiki/HardwareLiSter
 Source0:       http://www.ezix.org/software/files/lshw-%{version}.tar.gz
 Source1:       https://salsa.debian.org/openstack-team/third-party/lshw/raw/debian/stein/debian/patches/lshw-gtk.1
